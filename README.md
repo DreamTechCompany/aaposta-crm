@@ -24,7 +24,7 @@ Next.js (App Router, TypeScript) + Tailwind + Supabase (Postgres, Auth, Storage)
 
 ## Status
 
-Estrutura inicial: schema do banco (2 migrations), clients do Supabase e shell do Next prontos. Telas em construção.
+Autenticação e CRUD de eventos prontos. Schema do banco aplicado no Supabase. Próximas frentes e mapa do código em [docs/roadmap.md](docs/roadmap.md).
 
 ## Setup
 
