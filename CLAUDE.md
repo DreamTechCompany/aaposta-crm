@@ -18,7 +18,11 @@ Briefing completo e proposta no repo de operação da agência (`DreamTechAgency
 
 ## Stack
 
-A definir. Decidir antes de escrever código e registrar aqui.
+- **Next.js** (App Router, TypeScript) — front + rotas de API.
+- **Supabase** — Postgres, Auth, Storage (upload de contratos assinados), políticas de acesso (RLS).
+- **Resend** (ou similar) — notificações por e-mail.
+- Geração de PDF (contrato pré-preenchido) via função serverless.
+- Deploy: Vercel. Banco arquitetado pra escala desde o início ("infinitos clientes").
 
 ## Convenções
 

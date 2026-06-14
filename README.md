@@ -18,10 +18,24 @@ Cliente da [DreamTech](https://github.com/DreamTechCompany). Briefing e proposta
 
 Sem integração de assinatura eletrônica no MVP — o expositor assina o PDF à mão digitalmente e devolve; o sistema só suporta o upload.
 
+## Stack
+
+Next.js (App Router, TypeScript) + Tailwind + Supabase (Postgres, Auth, Storage). E-mail via Resend. Deploy na Vercel. Detalhes do banco em [docs/schema.md](docs/schema.md).
+
 ## Status
 
-Em estruturação. Stack a definir.
+Estrutura inicial: schema do banco (2 migrations), clients do Supabase e shell do Next prontos. Telas em construção.
 
 ## Setup
 
-_A definir conforme a stack._
+```bash
+npm install
+cp .env.example .env.local   # preencher com as keys do Supabase
+npm run dev
+```
+
+### Banco (Supabase)
+
+1. Criar um projeto em [supabase.com](https://supabase.com).
+2. Copiar URL + anon key para `.env.local`.
+3. Aplicar as migrations de `supabase/migrations/` (via Supabase CLI `supabase db push`, ou colando o SQL no SQL Editor na ordem 0001 → 0002).
