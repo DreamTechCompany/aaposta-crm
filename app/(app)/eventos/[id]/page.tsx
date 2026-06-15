@@ -114,6 +114,12 @@ export default async function EventoPage({
           Pipeline
         </Link>
         <Link
+          href={`/eventos/${id}/formularios`}
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+        >
+          Formulários
+        </Link>
+        <Link
           href={`/eventos/${id}/editar`}
           className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
         >
