@@ -108,8 +108,14 @@ export default async function EventoPage({
 
       <div className="mt-6 flex items-center gap-3">
         <Link
-          href={`/eventos/${id}/editar`}
+          href={`/eventos/${id}/pipeline`}
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+        >
+          Pipeline
+        </Link>
+        <Link
+          href={`/eventos/${id}/editar`}
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
         >
           Editar
         </Link>
