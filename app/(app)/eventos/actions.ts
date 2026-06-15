@@ -107,3 +107,59 @@ export async function deleteEvent(id: string) {
   revalidatePath("/eventos");
   redirect("/eventos");
 }
+
+// Vincula um expositor ao evento (cria o card do pipeline na 1ª etapa).
+export async function linkExhibitor(eventId: string, formData: FormData) {
+  const exhibitorId = str(formData.get("exhibitor_id"));
+  if (!exhibitorId) {
+    redirect(
+      `/eventos/${eventId}?error=` +
+        encodeURIComponent("Selecione um expositor"),
+    );
+  }
+
+  const supabase = await createClient();
+  const { data: stage } = await supabase
+    .from("pipeline_stages")
+    .select("id")
+    .order("position", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = await supabase.from("event_exhibitors").insert({
+    event_id: eventId,
+    exhibitor_id: exhibitorId,
+    stage_id: stage?.id ?? null,
+  });
+
+  if (error) {
+    // 23505 = unique_violation (event_id, exhibitor_id) → já vinculado
+    const msg =
+      error.code === "23505"
+        ? "Esse expositor já está vinculado ao evento"
+        : error.message;
+    redirect(`/eventos/${eventId}?error=` + encodeURIComponent(msg));
+  }
+
+  revalidatePath(`/eventos/${eventId}`);
+  redirect(`/eventos/${eventId}`);
+}
+
+// Remove o vínculo de um expositor com o evento (apaga o card do pipeline).
+export async function unlinkExhibitor(
+  eventId: string,
+  eventExhibitorId: string,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("event_exhibitors")
+    .delete()
+    .eq("id", eventExhibitorId);
+
+  if (error) {
+    redirect(`/eventos/${eventId}?error=` + encodeURIComponent(error.message));
+  }
+
+  revalidatePath(`/eventos/${eventId}`);
+  redirect(`/eventos/${eventId}`);
+}

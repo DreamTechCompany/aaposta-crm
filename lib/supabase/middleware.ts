@@ -32,7 +32,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !request.nextUrl.pathname.startsWith("/login")) {
+  // Rotas públicas (sem sessão): login e cadastro.
+  const { pathname } = request.nextUrl;
+  const isPublic =
+    pathname.startsWith("/login") || pathname.startsWith("/cadastrar");
+
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

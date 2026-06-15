@@ -1,6 +1,6 @@
 # Roadmap — AAposta CRM
 
-Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 2026-06-14.
+Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 2026-06-15.
 
 ## Status atual
 
@@ -9,6 +9,8 @@ Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 202
 - Schema do banco aplicado no Supabase — migrations `0001_init.sql` e `0002_rls.sql`.
 - Autenticação: login/logout por e-mail e senha, middleware de sessão e proteção de rotas (`middleware.ts`).
 - **CRUD de eventos completo**: listar, criar, editar, ver e excluir. É a referência de padrão para as próximas telas.
+- **CRUD de expositores completo** + vínculo com evento: lista/criar/editar/ver expositores (`app/(app)/expositores/`); na página do evento, listar expositores vinculados, vincular (cria `event_exhibitors` já na 1ª etapa do pipeline) e desvincular. Na página do expositor, lista os eventos em que ele está.
+- **Kanban do pipeline por evento**: `/eventos/[id]/pipeline` — colunas = `pipeline_stages` (por `position`), cards = `event_exhibitors`. Drag-and-drop nativo com atualização otimista, `moveCard` atualiza `stage_id`.
 
 ## Como rodar
 
@@ -29,11 +31,9 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 ## Próximos passos (ordem sugerida)
 
-1. **Cadastro de expositores + vínculo com evento.**
-   Tabelas `exhibitors` e `event_exhibitors` já existem. Criar: lista de expositores, criar/editar expositor, e na página do evento listar os expositores vinculados com botão "vincular expositor". O vínculo (`event_exhibitors`) é o card do pipeline.
+1. ~~**Cadastro de expositores + vínculo com evento.**~~ ✅ Feito (2026-06-14). O vínculo (`event_exhibitors`) é o card do pipeline; já nasce na 1ª etapa.
 
-2. **Kanban do pipeline por evento.**
-   `pipeline_stages` já vem populado (6 etapas). Colunas = etapas, cards = `event_exhibitors`; arrastar entre colunas atualiza `stage_id`.
+2. ~~**Kanban do pipeline por evento.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/pipeline`, drag-and-drop nativo, `moveCard` atualiza `stage_id`. Próximo refinamento possível: reordenar/editar etapas pela UI.
 
 3. **Construtor de formulários por evento + link público.**
    Tabelas `forms` e `form_fields`. Página pública em `/f/[public_slug]` (acesso anônimo — o RLS já libera leitura de form ativo e inserção de submissão). Submissão grava em `form_submissions`.
