@@ -30,3 +30,30 @@ export type EventRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type ExhibitorRow = {
+  id: string;
+  company_name: string;
+  cnpj: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EventExhibitorRow = {
+  id: string;
+  event_id: string;
+  exhibitor_id: string;
+  stage_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+// Linha de event_exhibitors com o expositor e a etapa embutidos (join).
+export type EventExhibitorWithRelations = EventExhibitorRow & {
+  exhibitor: ExhibitorRow | null;
+  stage: { id: string; name: string } | null;
+};

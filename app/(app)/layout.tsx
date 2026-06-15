@@ -29,6 +29,12 @@ export default async function AppLayout({
             >
               Eventos
             </Link>
+            <Link
+              href="/expositores"
+              className="text-sm text-neutral-600 hover:text-neutral-900"
+            >
+              Expositores
+            </Link>
           </nav>
           <div className="flex items-center gap-4">
             <span className="text-sm text-neutral-500">{user.email}</span>

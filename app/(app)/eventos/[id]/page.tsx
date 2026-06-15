@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { statusLabel, type EventRow } from "@/lib/types";
-import { deleteEvent } from "../actions";
+import {
+  statusLabel,
+  type EventRow,
+  type ExhibitorRow,
+} from "@/lib/types";
+import { deleteEvent, linkExhibitor, unlinkExhibitor } from "../actions";
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
@@ -18,13 +22,23 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+type LinkedExhibitor = {
+  id: string;
+  exhibitor: Pick<ExhibitorRow, "id" | "company_name" | "contact_name"> | null;
+  stage: { name: string } | null;
+};
+
 export default async function EventoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const supabase = await createClient();
+
   const { data: event } = await supabase
     .from("events")
     .select("*")
@@ -33,7 +47,32 @@ export default async function EventoPage({
 
   if (!event) notFound();
 
+  // Expositores já vinculados a este evento (cards do pipeline).
+  const { data: linksData } = await supabase
+    .from("event_exhibitors")
+    .select(
+      "id, exhibitor:exhibitors(id, company_name, contact_name), stage:pipeline_stages(name)",
+    )
+    .eq("event_id", id)
+    .order("created_at", { ascending: true });
+
+  const links = (linksData ?? []) as unknown as LinkedExhibitor[];
+
+  // Expositores ainda não vinculados, pra alimentar o select de vínculo.
+  const { data: allExhibitors } = await supabase
+    .from("exhibitors")
+    .select("id, company_name")
+    .order("company_name", { ascending: true });
+
+  const linkedIds = new Set(
+    links.map((l) => l.exhibitor?.id).filter(Boolean) as string[],
+  );
+  const available = (
+    (allExhibitors ?? []) as Pick<ExhibitorRow, "id" | "company_name">[]
+  ).filter((x) => !linkedIds.has(x.id));
+
   const del = deleteEvent.bind(null, id);
+  const link = linkExhibitor.bind(null, id);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -53,6 +92,12 @@ export default async function EventoPage({
           {statusLabel(event.status)}
         </span>
       </div>
+
+      {error && (
+        <p className="mt-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
 
       <dl className="mt-8 divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
         <Row label="Local" value={event.location || "—"} />
@@ -76,6 +121,117 @@ export default async function EventoPage({
             Excluir
           </button>
         </form>
+      </div>
+
+      {/* Expositores do evento */}
+      <div className="mt-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Expositores</h2>
+          <Link
+            href="/expositores/novo"
+            className="text-sm text-neutral-500 hover:underline"
+          >
+            Cadastrar novo
+          </Link>
+        </div>
+
+        {links.length === 0 ? (
+          <p className="mt-3 text-sm text-neutral-500">
+            Nenhum expositor vinculado a este evento ainda.
+          </p>
+        ) : (
+          <ul className="mt-3 divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white text-sm">
+            {links.map((l) => {
+              const unlink = unlinkExhibitor.bind(null, id, l.id);
+              return (
+                <li
+                  key={l.id}
+                  className="flex items-center justify-between px-4 py-3"
+                >
+                  <div>
+                    {l.exhibitor ? (
+                      <Link
+                        href={`/expositores/${l.exhibitor.id}`}
+                        className="font-medium text-neutral-900 hover:underline"
+                      >
+                        {l.exhibitor.company_name}
+                      </Link>
+                    ) : (
+                      <span className="text-neutral-400">
+                        Expositor removido
+                      </span>
+                    )}
+                    {l.exhibitor?.contact_name && (
+                      <span className="ml-2 text-neutral-500">
+                        · {l.exhibitor.contact_name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {l.stage && (
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+                        {l.stage.name}
+                      </span>
+                    )}
+                    <form action={unlink}>
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-red-600 hover:underline"
+                      >
+                        Desvincular
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* Vincular expositor existente */}
+        {available.length > 0 ? (
+          <form
+            action={link}
+            className="mt-4 flex items-end gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+          >
+            <div className="flex-1">
+              <label
+                htmlFor="exhibitor_id"
+                className="block text-sm font-medium text-neutral-700"
+              >
+                Vincular expositor
+              </label>
+              <select
+                id="exhibitor_id"
+                name="exhibitor_id"
+                defaultValue=""
+                className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
+              >
+                <option value="" disabled>
+                  Selecione…
+                </option>
+                {available.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.company_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            >
+              Vincular
+            </button>
+          </form>
+        ) : (
+          allExhibitors &&
+          allExhibitors.length > 0 && (
+            <p className="mt-4 text-sm text-neutral-500">
+              Todos os expositores cadastrados já estão neste evento.
+            </p>
+          )
+        )}
       </div>
     </div>
   );
