@@ -6,12 +6,13 @@ Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 202
 
 **Pronto e funcionando:**
 - Projeto Next.js (App Router, TS) + Tailwind + Supabase configurado.
-- Schema do banco aplicado no Supabase — migrations `0001_init.sql` e `0002_rls.sql`.
+- Schema do banco aplicado no Supabase — migrations `0001_init.sql`, `0002_rls.sql` e `0003_event_exhibitor_public_token.sql`.
 - Autenticação: login/logout por e-mail e senha, middleware de sessão e proteção de rotas (`middleware.ts`).
 - **CRUD de eventos completo**: listar, criar, editar, ver e excluir. É a referência de padrão para as próximas telas.
 - **CRUD de expositores completo** + vínculo com evento: lista/criar/editar/ver expositores (`app/(app)/expositores/`); na página do evento, listar expositores vinculados, vincular (cria `event_exhibitors` já na 1ª etapa do pipeline) e desvincular. Na página do expositor, lista os eventos em que ele está.
 - **Kanban do pipeline por evento**: `/eventos/[id]/pipeline` — colunas = `pipeline_stages` (por `position`), cards = `event_exhibitors`. Drag-and-drop nativo com atualização otimista, `moveCard` atualiza `stage_id`.
 - **Construtor de formulários por evento + link público**: `/eventos/[id]/formularios` — criar/editar formulários (`forms`), construtor de campos dinâmico (`form_fields`: adicionar/remover/reordenar, 9 tipos, opções pra seleção, obrigatório). `saveFields` salva por diff (preserva ids). Link público `/f/[public_slug]` (anônimo, liberado no middleware) renderiza o form ativo e grava em `form_submissions`; tela de respostas no admin. Tipo `file` fica pra fase de documentos.
+- **Documentos (A + B)**: página de participação `/eventos/[id]/participacao/[eeId]`. Backoffice envia contrato/manual/CPE (`direction enviado`), lista, baixa (signed URL em `/api/documentos/[docId]`) e exclui. Expositor anônimo envia o contrato assinado por link único `/u/[token]` → upload via service role (`lib/supabase/admin.ts`), grava `direction recebido`. Bucket `documents` privado. Falta a parte C (contrato pré-preenchido em PDF).
 
 ## Como rodar
 
@@ -25,9 +26,9 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 ## Pendências / decisões em aberto
 
-- **Service role key:** foi exposta no chat durante o setup — rotacionar no Supabase (Settings → API) e atualizar o `.env.local`. Não é usada ainda; vira necessária no upload público de documentos.
+- ~~**Service role key** exposta no setup~~ → rotacionada em 2026-06-16 e em uso no upload público (`lib/supabase/admin.ts`).
+- ~~**Upload público de documento** (expositor anônimo)~~ → resolvido: Server Action com service role + token por participação (`/u/[token]`).
 - **Owner da org GitHub:** confirmar Pedro (`pedroacpellegrini`) como Owner de `DreamTechCompany` — hoje está como member.
-- **Upload público de documento** (expositor anônimo): decidir entre Route Handler com service role ou signed URL. Ver nota em `docs/schema.md`.
 - **Deploy:** ainda roda só local. Publicar na Vercel é passo futuro (gera URL fixa, sem depender do terminal).
 
 ## Próximos passos (ordem sugerida)
@@ -40,7 +41,7 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 4. **Documentos.** Bucket `documents` (privado) já criado.
    - ✅ **(A) Envio pelo backoffice** (2026-06-16): página de participação `/eventos/[id]/participacao/[eeId]` com upload (contrato/manual/CPE/outro, direction `enviado`), lista, download por signed URL (`/api/documentos/[docId]`) e exclusão.
-   - **(B) Coleta do contrato assinado** (upload do expositor anônimo): em andamento — link público por participação `/u/[token]`, upload via Route Handler com service role. Requer migration `0003` (token em `event_exhibitors`).
+   - ✅ **(B) Coleta do contrato assinado** (2026-06-16): link público por participação `/u/[token]` (anônimo, liberado no middleware); upload via Server Action com service role (`lib/supabase/admin.ts`), grava com direction `recebido`. Token em `event_exhibitors` (migration `0003`, aplicada). Documento recebido aparece na tela de participação marcado como "Recebido".
    - **(C) Contrato pré-preenchido em PDF** com dados da submissão: pendente, vira passo próprio.
 
 5. **Notificações por e-mail (Resend).**
