@@ -25,6 +25,23 @@ function formatAnswer(value: unknown): string {
   return String(value);
 }
 
+function StatusBadge({ label, done }: { label: string; done: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
+        done ? "bg-green-50 text-green-700" : "bg-neutral-100 text-neutral-500"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          done ? "bg-green-500" : "bg-neutral-300"
+        }`}
+      />
+      {label}: {done ? "recebido" : "pendente"}
+    </span>
+  );
+}
+
 const inputClass =
   "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
 
@@ -111,6 +128,8 @@ export default async function ParticipacaoPage({
   }
 
   const linkSub = linkSubmission.bind(null, id, eeId);
+  const hasForm = linkedSubmissions.length > 0;
+  const hasSigned = documents.some((d) => d.direction === "recebido");
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -138,6 +157,11 @@ export default async function ParticipacaoPage({
             ` · ${participation.exhibitor.contact_email}`}
         </p>
       )}
+
+      <div className="mt-3 flex items-center gap-2">
+        <StatusBadge label="Formulário" done={hasForm} />
+        <StatusBadge label="Contrato assinado" done={hasSigned} />
+      </div>
 
       <div className="mt-4">
         <Link

@@ -28,6 +28,24 @@ type LinkedExhibitor = {
   stage: { name: string } | null;
 };
 
+// Indicador de status: verde quando feito, cinza quando pendente.
+function StatusBadge({ label, done }: { label: string; done: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
+        done ? "bg-green-50 text-green-700" : "bg-neutral-100 text-neutral-500"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          done ? "bg-green-500" : "bg-neutral-300"
+        }`}
+      />
+      {label}
+    </span>
+  );
+}
+
 export default async function EventoPage({
   params,
   searchParams,
@@ -57,6 +75,29 @@ export default async function EventoPage({
     .order("created_at", { ascending: true });
 
   const links = (linksData ?? []) as unknown as LinkedExhibitor[];
+
+  // Status por participação: já respondeu o formulário? já enviou o contrato
+  // assinado? Substitui a notificação — dá pra ver de relance quem respondeu.
+  const eeIds = links.map((l) => l.id);
+  const respondedSet = new Set<string>();
+  const signedSet = new Set<string>();
+  if (eeIds.length > 0) {
+    const { data: subs } = await supabase
+      .from("form_submissions")
+      .select("event_exhibitor_id")
+      .in("event_exhibitor_id", eeIds);
+    for (const s of (subs ?? []) as { event_exhibitor_id: string | null }[]) {
+      if (s.event_exhibitor_id) respondedSet.add(s.event_exhibitor_id);
+    }
+    const { data: docs } = await supabase
+      .from("documents")
+      .select("event_exhibitor_id")
+      .in("event_exhibitor_id", eeIds)
+      .eq("direction", "recebido");
+    for (const d of (docs ?? []) as { event_exhibitor_id: string }[]) {
+      signedSet.add(d.event_exhibitor_id);
+    }
+  }
 
   // Expositores ainda não vinculados, pra alimentar o select de vínculo.
   const { data: allExhibitors } = await supabase
@@ -161,23 +202,35 @@ export default async function EventoPage({
                   className="flex items-center justify-between px-4 py-3"
                 >
                   <div>
-                    {l.exhibitor ? (
-                      <Link
-                        href={`/expositores/${l.exhibitor.id}`}
-                        className="font-medium text-neutral-900 hover:underline"
-                      >
-                        {l.exhibitor.company_name}
-                      </Link>
-                    ) : (
-                      <span className="text-neutral-400">
-                        Expositor removido
-                      </span>
-                    )}
-                    {l.exhibitor?.contact_name && (
-                      <span className="ml-2 text-neutral-500">
-                        · {l.exhibitor.contact_name}
-                      </span>
-                    )}
+                    <div>
+                      {l.exhibitor ? (
+                        <Link
+                          href={`/expositores/${l.exhibitor.id}`}
+                          className="font-medium text-neutral-900 hover:underline"
+                        >
+                          {l.exhibitor.company_name}
+                        </Link>
+                      ) : (
+                        <span className="text-neutral-400">
+                          Expositor removido
+                        </span>
+                      )}
+                      {l.exhibitor?.contact_name && (
+                        <span className="ml-2 text-neutral-500">
+                          · {l.exhibitor.contact_name}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <StatusBadge
+                        label="Formulário"
+                        done={respondedSet.has(l.id)}
+                      />
+                      <StatusBadge
+                        label="Contrato assinado"
+                        done={signedSet.has(l.id)}
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {l.stage && (
