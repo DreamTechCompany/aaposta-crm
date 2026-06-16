@@ -9,12 +9,14 @@ import {
   type ExhibitorRow,
 } from "@/lib/types";
 import { uploadDocument, deleteDocument } from "./actions";
+import { UploadLink } from "./upload-link";
 
 const inputClass =
   "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
 
 type Participation = {
   id: string;
+  public_token: string;
   event: { id: string; name: string } | null;
   exhibitor: Pick<
     ExhibitorRow,
@@ -41,7 +43,7 @@ export default async function ParticipacaoPage({
   const { data: ee } = await supabase
     .from("event_exhibitors")
     .select(
-      "id, event:events(id, name), exhibitor:exhibitors(id, company_name, contact_name, contact_email), stage:pipeline_stages(name)",
+      "id, public_token, event:events(id, name), exhibitor:exhibitors(id, company_name, contact_name, contact_email), stage:pipeline_stages(name)",
     )
     .eq("id", eeId)
     .eq("event_id", id)
@@ -92,6 +94,8 @@ export default async function ParticipacaoPage({
         </p>
       )}
 
+      <UploadLink token={participation.public_token} />
+
       {/* Documentos */}
       <div className="mt-10">
         <h2 className="text-lg font-semibold tracking-tight">Documentos</h2>
@@ -121,6 +125,17 @@ export default async function ParticipacaoPage({
                     <div className="mt-0.5 flex items-center gap-2 text-xs text-neutral-500">
                       <span className="rounded-full bg-neutral-100 px-2 py-0.5">
                         {documentKindLabel(doc.kind)}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 ${
+                          doc.direction === "recebido"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-blue-50 text-blue-700"
+                        }`}
+                      >
+                        {doc.direction === "recebido"
+                          ? "Recebido"
+                          : "Enviado"}
                       </span>
                       <span>{documentStatusLabel(doc.status)}</span>
                       <span>· {formatDateTime(doc.uploaded_at)}</span>
