@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// Move um card (event_exhibitor) para outra etapa do pipeline.
+// Move um card (event_exhibitor) para outra etapa do pipeline (ajuste manual).
 export async function moveCard(
   eventExhibitorId: string,
   stageId: string,
@@ -17,6 +17,5 @@ export async function moveCard(
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/eventos/${eventId}/pipeline`);
   revalidatePath(`/eventos/${eventId}`);
 }

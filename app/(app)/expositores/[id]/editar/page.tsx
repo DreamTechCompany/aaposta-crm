@@ -34,6 +34,7 @@ export default async function EditarExpositorPage({
           exhibitor={exhibitor}
           submitLabel="Salvar"
           error={error}
+          cancelHref={`/expositores/${exhibitor.id}`}
         />
       </div>
     </div>

@@ -33,9 +33,9 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 ## Próximos passos (ordem sugerida)
 
-1. ~~**Cadastro de expositores + vínculo com evento.**~~ ✅ Feito (2026-06-14). O vínculo (`event_exhibitors`) é o card do pipeline; já nasce na 1ª etapa.
+1. ~~**Cadastro de expositores + vínculo com evento.**~~ ✅ Feito (2026-06-14). O vínculo (`event_exhibitors`) é o card do pipeline; já nasce na 1ª etapa. **Auto-cadastro público por evento** em 2026-06-16: link `/expor/[slug]` (anônimo, liberado no middleware) com os mesmos campos do cadastro manual; `registerExhibitor` (service role) cria o expositor e já vincula ao evento na 1ª etapa. Editável depois na ficha do expositor.
 
-2. ~~**Kanban do pipeline por evento.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/pipeline`, drag-and-drop nativo, `moveCard` atualiza `stage_id`. Próximo refinamento possível: reordenar/editar etapas pela UI.
+2. ~~**Kanban do pipeline por evento.**~~ ✅ Feito (2026-06-15). Drag-and-drop nativo, `moveCard` atualiza `stage_id`. **Embutido na página do evento** em 2026-06-16 (a rota separada `/pipeline` foi removida; kanban em `app/(app)/eventos/[id]/kanban-board.tsx`). **Automação** (`lib/pipeline.ts` `advanceStage`, só avança): vincular submissão → "Dados coletados"; subir contrato → "Contrato enviado"; receber contrato assinado → "Contrato assinado". "Documentação completa" e "Concluído" seguem manuais. A **lista de eventos** mostra o status do evento = etapa-gargalo (menos avançada) + quem está segurando. Próximo refinamento possível: reordenar/editar etapas pela UI.
 
 3. ~~**Construtor de formulários por evento + link público.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/formularios` (CRUD + construtor de campos dinâmico) e página pública `/f/[public_slug]`. Submissão grava em `form_submissions`; respostas visíveis no admin. Vínculo submissão↔`event_exhibitor` feito em 2026-06-16 (na tela de participação). Refinamento possível: tipo de campo `file`.
 
