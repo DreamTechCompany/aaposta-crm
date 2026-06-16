@@ -46,9 +46,9 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 ### Melhorias anotadas (futuro)
 - **Formulário por expositor (link individual):** hoje o form é um por evento e a resposta precisa ser vinculada à mão ao expositor. Alternativa: link de formulário por participação (igual ao `/u/[token]` de upload) — a submissão já nasceria amarrada ao expositor, sem o passo manual de vincular.
+- **Notificação externa (e-mail/WhatsApp):** avisar a AAposta fora do CRM quando chega formulário/documento. Decidido não fazer agora (Resend exige verificar domínio; WhatsApp oficial exige Meta Business + templates aprovados; libs não-oficiais arriscam banir o número). Em vez disso, o status fica visível dentro do CRM (ver passo 5). Retomar se quiserem aviso ativo — caminho mais simples seria e-mail via Resend ou um bot de Telegram.
 
-5. **Notificações por e-mail (Resend).**
-   Avisar a AAposta quando um expositor preenche formulário ou envia documento.
+5. ~~**Notificações por e-mail.**~~ → Trocado por **status visível no CRM** (2026-06-16): na página do evento, cada expositor mostra badges "Formulário" e "Contrato assinado" (verde = recebido, cinza = pendente); a página de participação repete o resumo no topo. Substitui o aviso ativo — a AAposta abre o evento e vê de relance quem já respondeu. Notificação externa fica anotada acima como melhoria futura.
 
 6. **Dashboard por evento.**
    Visão geral de expositores, status e pendências — consolida o que as telas acima produzem.
