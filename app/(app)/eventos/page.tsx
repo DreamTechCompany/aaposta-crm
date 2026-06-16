@@ -1,18 +1,61 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { statusLabel, type EventRow } from "@/lib/types";
+import { type EventRow } from "@/lib/types";
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
   return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
+// Status do evento no pipeline = etapa mais atrasada (gargalo) entre os
+// expositores, com quem está segurando o avanço.
+type Bottleneck = { stageName: string; done: boolean; holding: string[] } | null;
+
 export default async function EventosPage() {
   const supabase = await createClient();
-  const { data: events, error } = await supabase
+  const { data: eventsData, error } = await supabase
     .from("events")
     .select("*")
     .order("starts_at", { ascending: true, nullsFirst: false });
+
+  const events = (eventsData ?? []) as EventRow[];
+  const eventIds = events.map((e) => e.id);
+
+  // Participações de todos os eventos, com etapa e nome do expositor.
+  const byEvent = new Map<string, Bottleneck>();
+  if (eventIds.length > 0) {
+    const { data: eeData } = await supabase
+      .from("event_exhibitors")
+      .select(
+        "event_id, stage:pipeline_stages(position, name), exhibitor:exhibitors(company_name)",
+      )
+      .in("event_id", eventIds);
+
+    type Row = {
+      event_id: string;
+      stage: { position: number; name: string } | null;
+      exhibitor: { company_name: string } | null;
+    };
+    const rows = (eeData ?? []) as unknown as Row[];
+
+    for (const e of events) {
+      const mine = rows.filter((r) => r.event_id === e.id);
+      if (mine.length === 0) {
+        byEvent.set(e.id, null);
+        continue;
+      }
+      // Etapa menos avançada (menor position). Stage nulo conta como "início".
+      const minPos = Math.min(...mine.map((r) => r.stage?.position ?? 0));
+      const atMin = mine.filter((r) => (r.stage?.position ?? 0) === minPos);
+      const stageName = atMin[0].stage?.name ?? "Interesse";
+      const holding = atMin.map((r) => r.exhibitor?.company_name ?? "Expositor");
+      byEvent.set(e.id, {
+        stageName,
+        done: stageName === "Concluído",
+        holding,
+      });
+    }
+  }
 
   return (
     <div>
@@ -32,13 +75,13 @@ export default async function EventosPage() {
         </p>
       )}
 
-      {!error && (!events || events.length === 0) && (
+      {!error && events.length === 0 && (
         <p className="mt-16 text-center text-sm text-neutral-500">
           Nenhum evento ainda. Crie o primeiro.
         </p>
       )}
 
-      {events && events.length > 0 && (
+      {events.length > 0 && (
         <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500">
@@ -46,33 +89,60 @@ export default async function EventosPage() {
                 <th className="px-4 py-3 font-medium">Nome</th>
                 <th className="px-4 py-3 font-medium">Local</th>
                 <th className="px-4 py-3 font-medium">Início</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Status (pipeline)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {(events as EventRow[]).map((e) => (
-                <tr key={e.id} className="hover:bg-neutral-50">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/eventos/${e.id}`}
-                      className="font-medium text-neutral-900 hover:underline"
-                    >
-                      {e.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600">
-                    {e.location || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600">
-                    {formatDate(e.starts_at)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs">
-                      {statusLabel(e.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {events.map((e) => {
+                const b = byEvent.get(e.id) ?? null;
+                return (
+                  <tr key={e.id} className="hover:bg-neutral-50">
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/eventos/${e.id}`}
+                        className="font-medium text-neutral-900 hover:underline"
+                      >
+                        {e.name}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-neutral-600">
+                      {e.location || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-neutral-600">
+                      {formatDate(e.starts_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      {!b ? (
+                        <span className="text-xs text-neutral-400">
+                          Sem expositores
+                        </span>
+                      ) : (
+                        <div>
+                          <span
+                            className={`inline-block rounded-full px-2 py-0.5 text-xs ${
+                              b.done
+                                ? "bg-green-50 text-green-700"
+                                : "bg-neutral-100 text-neutral-700"
+                            }`}
+                          >
+                            {b.stageName}
+                          </span>
+                          {!b.done && (
+                            <p
+                              className="mt-1 text-xs text-neutral-500"
+                              title={b.holding.join(", ")}
+                            >
+                              aguardando: {b.holding[0]}
+                              {b.holding.length > 1 &&
+                                ` +${b.holding.length - 1}`}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

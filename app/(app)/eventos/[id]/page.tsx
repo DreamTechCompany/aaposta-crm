@@ -7,6 +7,8 @@ import {
   type ExhibitorRow,
 } from "@/lib/types";
 import { deleteEvent, linkExhibitor, unlinkExhibitor } from "../actions";
+import { KanbanBoard } from "./kanban-board";
+import { RegistrationLink } from "./registration-link";
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
@@ -24,6 +26,7 @@ function Row({ label, value }: { label: string; value: string }) {
 
 type LinkedExhibitor = {
   id: string;
+  stage_id: string | null;
   exhibitor: Pick<ExhibitorRow, "id" | "company_name" | "contact_name"> | null;
   stage: { name: string } | null;
 };
@@ -69,12 +72,25 @@ export default async function EventoPage({
   const { data: linksData } = await supabase
     .from("event_exhibitors")
     .select(
-      "id, exhibitor:exhibitors(id, company_name, contact_name), stage:pipeline_stages(name)",
+      "id, stage_id, exhibitor:exhibitors(id, company_name, contact_name), stage:pipeline_stages(name)",
     )
     .eq("event_id", id)
     .order("created_at", { ascending: true });
 
   const links = (linksData ?? []) as unknown as LinkedExhibitor[];
+
+  // Etapas do pipeline + cards, pro kanban embutido.
+  const { data: stagesData } = await supabase
+    .from("pipeline_stages")
+    .select("id, name")
+    .order("position", { ascending: true });
+  const stages = (stagesData ?? []) as { id: string; name: string }[];
+  const cards = links.map((l) => ({
+    id: l.id,
+    companyName: l.exhibitor?.company_name ?? "Expositor removido",
+    contactName: l.exhibitor?.contact_name ?? null,
+    stageId: l.stage_id,
+  }));
 
   // Status por participação: já respondeu o formulário? já enviou o contrato
   // assinado? Substitui a notificação — dá pra ver de relance quem respondeu.
@@ -116,7 +132,8 @@ export default async function EventoPage({
   const link = linkExhibitor.bind(null, id);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-2xl">
       <div className="flex items-start justify-between">
         <div>
           <Link
@@ -149,12 +166,6 @@ export default async function EventoPage({
 
       <div className="mt-6 flex items-center gap-3">
         <Link
-          href={`/eventos/${id}/pipeline`}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-        >
-          Pipeline
-        </Link>
-        <Link
           href={`/eventos/${id}/formularios`}
           className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
         >
@@ -175,9 +186,20 @@ export default async function EventoPage({
           </button>
         </form>
       </div>
+      </div>
+
+      {/* Pipeline embutido (kanban, um por evento) */}
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold tracking-tight">Pipeline</h2>
+        <p className="mt-1 text-sm text-neutral-500">
+          Avança sozinho nos marcos (formulário, contrato enviado, contrato
+          assinado). Arraste para ajustar manualmente.
+        </p>
+        <KanbanBoard eventId={id} stages={stages} cards={cards} />
+      </div>
 
       {/* Expositores do evento */}
-      <div className="mt-10">
+      <div className="mx-auto mt-10 max-w-2xl">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold tracking-tight">Expositores</h2>
           <Link
@@ -303,6 +325,8 @@ export default async function EventoPage({
             </p>
           )
         )}
+
+        <RegistrationLink slug={event.slug} />
       </div>
     </div>
   );

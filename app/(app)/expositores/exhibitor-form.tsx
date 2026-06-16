@@ -10,11 +10,13 @@ export function ExhibitorForm({
   exhibitor,
   submitLabel,
   error,
+  cancelHref,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   exhibitor?: ExhibitorRow;
   submitLabel: string;
   error?: string;
+  cancelHref?: string;
 }) {
   return (
     <form action={action} className="space-y-5">
@@ -108,12 +110,14 @@ export function ExhibitorForm({
         >
           {submitLabel}
         </button>
-        <Link
-          href="/expositores"
-          className="rounded-md px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
-        >
-          Cancelar
-        </Link>
+        {cancelHref && (
+          <Link
+            href={cancelHref}
+            className="rounded-md px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+          >
+            Cancelar
+          </Link>
+        )}
       </div>
     </form>
   );

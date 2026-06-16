@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DOCUMENT_KINDS, type DocumentKind } from "@/lib/types";
+import {
+  advanceStage,
+  STAGE_DADOS_COLETADOS,
+  STAGE_CONTRATO_ENVIADO,
+} from "@/lib/pipeline";
 
 const KIND_SET = new Set<string>(DOCUMENT_KINDS);
 
@@ -62,7 +67,13 @@ export async function uploadDocument(
     redirect(`${base}?error=` + encodeURIComponent(insertError.message));
   }
 
+  // Enviar o contrato avança o card para "Contrato enviado".
+  if (kind === "contrato") {
+    await advanceStage(supabase, eeId, STAGE_CONTRATO_ENVIADO);
+  }
+
   revalidatePath(base);
+  revalidatePath(`/eventos/${eventId}`);
   redirect(base);
 }
 
@@ -116,7 +127,11 @@ export async function linkSubmission(
     redirect(`${base}?error=` + encodeURIComponent(error.message));
   }
 
+  // Vincular a submissão (dados do formulário) avança para "Dados coletados".
+  await advanceStage(supabase, eeId, STAGE_DADOS_COLETADOS);
+
   revalidatePath(base);
+  revalidatePath(`/eventos/${eventId}`);
   redirect(base);
 }
 

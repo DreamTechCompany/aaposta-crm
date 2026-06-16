@@ -16,6 +16,7 @@ export default async function NovoExpositorPage({
           action={createExhibitor}
           submitLabel="Criar expositor"
           error={error}
+          cancelHref="/expositores"
         />
       </div>
     </div>

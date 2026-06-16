@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { advanceStage, STAGE_CONTRATO_ASSINADO } from "@/lib/pipeline";
 
 function safeName(name: string): string {
   return name
@@ -63,6 +64,9 @@ export async function submitSignedDocument(token: string, formData: FormData) {
     await supabase.storage.from("documents").remove([path]);
     redirect(`${base}?error=` + encodeURIComponent(insertError.message));
   }
+
+  // Receber o contrato assinado avança o card para "Contrato assinado".
+  await advanceStage(supabase, ee.id, STAGE_CONTRATO_ASSINADO);
 
   redirect(`${base}?sent=1`);
 }

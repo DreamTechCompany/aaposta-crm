@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { moveCard } from "./actions";
+import { moveCard } from "./pipeline-actions";
 
 type Stage = { id: string; name: string };
 type Card = {
@@ -69,7 +69,7 @@ export function KanbanBoard({
   }
 
   return (
-    <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
+    <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
       {stages.map((stage) => {
         const colCards = items.filter((c) => columnOf(c) === stage.id);
         const isOver = overStage === stage.id;
