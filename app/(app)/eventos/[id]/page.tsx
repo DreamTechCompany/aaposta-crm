@@ -185,6 +185,12 @@ export default async function EventoPage({
                         {l.stage.name}
                       </span>
                     )}
+                    <Link
+                      href={`/eventos/${id}/participacao/${l.id}`}
+                      className="text-xs font-medium text-neutral-600 hover:underline"
+                    >
+                      Documentos
+                    </Link>
                     <form action={unlink}>
                       <button
                         type="submit"

@@ -128,3 +128,47 @@ export type FormSubmissionRow = {
   answers: Record<string, unknown>;
   submitted_at: string;
 };
+
+// ─────────────────────────────────────────────────────────────────────────
+// Documentos (enviados pela AAposta e recebidos do expositor)
+// ─────────────────────────────────────────────────────────────────────────
+
+// Tipos de documento que a AAposta envia pelo backoffice. 'contrato_assinado'
+// (recebido do expositor) entra com o upload público, na fase B.
+export const DOCUMENT_KINDS = ["contrato", "manual", "cpe", "outro"] as const;
+
+export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
+
+const DOCUMENT_KIND_LABELS: Record<string, string> = {
+  contrato: "Contrato",
+  contrato_assinado: "Contrato assinado",
+  manual: "Manual",
+  cpe: "CPE",
+  outro: "Outro",
+};
+
+export function documentKindLabel(kind: string): string {
+  return DOCUMENT_KIND_LABELS[kind] ?? kind;
+}
+
+const DOCUMENT_STATUS_LABELS: Record<string, string> = {
+  pendente: "Pendente",
+  enviado: "Enviado",
+  recebido: "Recebido",
+  aprovado: "Aprovado",
+};
+
+export function documentStatusLabel(status: string): string {
+  return DOCUMENT_STATUS_LABELS[status] ?? status;
+}
+
+export type DocumentRow = {
+  id: string;
+  event_exhibitor_id: string;
+  kind: string;
+  direction: "enviado" | "recebido";
+  storage_path: string;
+  file_name: string | null;
+  status: string;
+  uploaded_at: string;
+};

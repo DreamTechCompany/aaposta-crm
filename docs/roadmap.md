@@ -38,8 +38,10 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 3. ~~**Construtor de formulários por evento + link público.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/formularios` (CRUD + construtor de campos dinâmico) e página pública `/f/[public_slug]`. Submissão grava em `form_submissions`; respostas visíveis no admin. Refinamentos possíveis: vincular submissão a um `event_exhibitor` (hoje fica null), tipo de campo `file` (entra com documentos).
 
-4. **Documentos.**
-   Envio do contrato pré-preenchido (gerar PDF com dados da submissão), manual e CPE; coleta do contrato assinado (upload). Bucket `documents` (privado) já criado.
+4. **Documentos.** Bucket `documents` (privado) já criado.
+   - ✅ **(A) Envio pelo backoffice** (2026-06-16): página de participação `/eventos/[id]/participacao/[eeId]` com upload (contrato/manual/CPE/outro, direction `enviado`), lista, download por signed URL (`/api/documentos/[docId]`) e exclusão.
+   - **(B) Coleta do contrato assinado** (upload do expositor anônimo): em andamento — link público por participação `/u/[token]`, upload via Route Handler com service role. Requer migration `0003` (token em `event_exhibitors`).
+   - **(C) Contrato pré-preenchido em PDF** com dados da submissão: pendente, vira passo próprio.
 
 5. **Notificações por e-mail (Resend).**
    Avisar a AAposta quando um expositor preenche formulário ou envia documento.
