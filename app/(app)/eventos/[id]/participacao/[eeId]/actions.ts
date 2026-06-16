@@ -92,3 +92,50 @@ export async function deleteDocument(
   revalidatePath(base);
   redirect(base);
 }
+
+// Liga uma submissão do formulário a esta participação (preenche
+// event_exhibitor_id). É a origem dos dados operacionais do contrato.
+export async function linkSubmission(
+  eventId: string,
+  eeId: string,
+  formData: FormData,
+) {
+  const base = `/eventos/${eventId}/participacao/${eeId}`;
+  const submissionId = String(formData.get("submission_id") ?? "").trim();
+  if (!submissionId) {
+    redirect(`${base}?error=` + encodeURIComponent("Selecione uma submissão"));
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("form_submissions")
+    .update({ event_exhibitor_id: eeId })
+    .eq("id", submissionId);
+
+  if (error) {
+    redirect(`${base}?error=` + encodeURIComponent(error.message));
+  }
+
+  revalidatePath(base);
+  redirect(base);
+}
+
+export async function unlinkSubmission(
+  eventId: string,
+  eeId: string,
+  submissionId: string,
+) {
+  const base = `/eventos/${eventId}/participacao/${eeId}`;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("form_submissions")
+    .update({ event_exhibitor_id: null })
+    .eq("id", submissionId);
+
+  if (error) {
+    redirect(`${base}?error=` + encodeURIComponent(error.message));
+  }
+
+  revalidatePath(base);
+  redirect(base);
+}

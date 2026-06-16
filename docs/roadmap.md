@@ -37,12 +37,15 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 2. ~~**Kanban do pipeline por evento.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/pipeline`, drag-and-drop nativo, `moveCard` atualiza `stage_id`. Próximo refinamento possível: reordenar/editar etapas pela UI.
 
-3. ~~**Construtor de formulários por evento + link público.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/formularios` (CRUD + construtor de campos dinâmico) e página pública `/f/[public_slug]`. Submissão grava em `form_submissions`; respostas visíveis no admin. Refinamentos possíveis: vincular submissão a um `event_exhibitor` (hoje fica null), tipo de campo `file` (entra com documentos).
+3. ~~**Construtor de formulários por evento + link público.**~~ ✅ Feito (2026-06-15). `/eventos/[id]/formularios` (CRUD + construtor de campos dinâmico) e página pública `/f/[public_slug]`. Submissão grava em `form_submissions`; respostas visíveis no admin. Vínculo submissão↔`event_exhibitor` feito em 2026-06-16 (na tela de participação). Refinamento possível: tipo de campo `file`.
 
 4. **Documentos.** Bucket `documents` (privado) já criado.
    - ✅ **(A) Envio pelo backoffice** (2026-06-16): página de participação `/eventos/[id]/participacao/[eeId]` com upload (contrato/manual/CPE/outro, direction `enviado`), lista, download por signed URL (`/api/documentos/[docId]`) e exclusão.
    - ✅ **(B) Coleta do contrato assinado** (2026-06-16): link público por participação `/u/[token]` (anônimo, liberado no middleware); upload via Server Action com service role (`lib/supabase/admin.ts`), grava com direction `recebido`. Token em `event_exhibitors` (migration `0003`, aplicada). Documento recebido aparece na tela de participação marcado como "Recebido".
-   - **(C) Contrato pré-preenchido em PDF** com dados da submissão: pendente, vira passo próprio.
+   - ✅ **(C) Contrato pré-preenchido** (2026-06-16): vínculo submissão↔participação na tela de participação (`linkSubmission`, preenche `event_exhibitor_id`); página `/contrato/[eeId]` reproduz o contrato (modelo Grande Prêmio Brasil) com o bloco do LOCATÁRIO já preenchido a partir do cadastro do expositor + quadro com os dados declarados no formulário; impressão A4 → "Salvar como PDF". Cláusula 1 (estrutura/KVA/energia) e vouchers ficam pra marcação manual (fluxo de assinatura à mão). Modelo de contrato é específico desse evento — outros eventos precisariam do próprio template.
+
+### Melhorias anotadas (futuro)
+- **Formulário por expositor (link individual):** hoje o form é um por evento e a resposta precisa ser vinculada à mão ao expositor. Alternativa: link de formulário por participação (igual ao `/u/[token]` de upload) — a submissão já nasceria amarrada ao expositor, sem o passo manual de vincular.
 
 5. **Notificações por e-mail (Resend).**
    Avisar a AAposta quando um expositor preenche formulário ou envia documento.

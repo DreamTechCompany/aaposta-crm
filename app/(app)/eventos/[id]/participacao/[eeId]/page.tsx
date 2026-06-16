@@ -7,9 +7,23 @@ import {
   documentStatusLabel,
   type DocumentRow,
   type ExhibitorRow,
+  type FormFieldRow,
+  type FormSubmissionRow,
 } from "@/lib/types";
-import { uploadDocument, deleteDocument } from "./actions";
+import {
+  uploadDocument,
+  deleteDocument,
+  linkSubmission,
+  unlinkSubmission,
+} from "./actions";
 import { UploadLink } from "./upload-link";
+
+function formatAnswer(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+  return String(value);
+}
 
 const inputClass =
   "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
@@ -61,6 +75,43 @@ export default async function ParticipacaoPage({
   const documents = (docsData ?? []) as DocumentRow[];
   const upload = uploadDocument.bind(null, id, eeId);
 
+  // Submissões dos formulários deste evento, pra origem dos dados operacionais.
+  const { data: formsData } = await supabase
+    .from("forms")
+    .select("id, title")
+    .eq("event_id", id);
+  const forms = (formsData ?? []) as { id: string; title: string }[];
+  const formIds = forms.map((f) => f.id);
+  const formTitleById = new Map(forms.map((f) => [f.id, f.title]));
+
+  let linkedSubmissions: FormSubmissionRow[] = [];
+  let availableSubmissions: FormSubmissionRow[] = [];
+  const fieldsByForm = new Map<string, FormFieldRow[]>();
+
+  if (formIds.length > 0) {
+    const { data: subsData } = await supabase
+      .from("form_submissions")
+      .select("*")
+      .in("form_id", formIds)
+      .order("submitted_at", { ascending: false });
+    const subs = (subsData ?? []) as FormSubmissionRow[];
+    linkedSubmissions = subs.filter((s) => s.event_exhibitor_id === eeId);
+    availableSubmissions = subs.filter((s) => s.event_exhibitor_id === null);
+
+    const { data: fieldsData } = await supabase
+      .from("form_fields")
+      .select("*")
+      .in("form_id", formIds)
+      .order("position", { ascending: true });
+    for (const field of (fieldsData ?? []) as FormFieldRow[]) {
+      const list = fieldsByForm.get(field.form_id) ?? [];
+      list.push(field);
+      fieldsByForm.set(field.form_id, list);
+    }
+  }
+
+  const linkSub = linkSubmission.bind(null, id, eeId);
+
   return (
     <div className="mx-auto max-w-2xl">
       <Link
@@ -88,6 +139,15 @@ export default async function ParticipacaoPage({
         </p>
       )}
 
+      <div className="mt-4">
+        <Link
+          href={`/contrato/${eeId}`}
+          className="inline-block rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+        >
+          Gerar contrato
+        </Link>
+      </div>
+
       {error && (
         <p className="mt-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
@@ -95,6 +155,98 @@ export default async function ParticipacaoPage({
       )}
 
       <UploadLink token={participation.public_token} />
+
+      {/* Dados do formulário (origem dos dados operacionais do contrato) */}
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Dados do formulário
+        </h2>
+
+        {linkedSubmissions.length === 0 ? (
+          <p className="mt-3 text-sm text-neutral-500">
+            Nenhuma submissão vinculada a este expositor ainda.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-4">
+            {linkedSubmissions.map((sub) => {
+              const fields = fieldsByForm.get(sub.form_id) ?? [];
+              const unlinkSub = unlinkSubmission.bind(null, id, eeId, sub.id);
+              return (
+                <div
+                  key={sub.id}
+                  className="rounded-lg border border-neutral-200 bg-white p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-neutral-400">
+                      {formTitleById.get(sub.form_id) ?? "Formulário"} ·{" "}
+                      {formatDateTime(sub.submitted_at)}
+                    </p>
+                    <form action={unlinkSub}>
+                      <button
+                        type="submit"
+                        className="text-xs font-medium text-red-600 hover:underline"
+                      >
+                        Desvincular
+                      </button>
+                    </form>
+                  </div>
+                  <dl className="mt-3 divide-y divide-neutral-100 text-sm">
+                    {fields.map((field) => (
+                      <div
+                        key={field.id}
+                        className="flex justify-between gap-6 py-2"
+                      >
+                        <dt className="text-neutral-500">{field.label}</dt>
+                        <dd className="text-right text-neutral-900">
+                          {formatAnswer(sub.answers[field.id])}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {availableSubmissions.length > 0 && (
+          <form
+            action={linkSub}
+            className="mt-4 flex items-end gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+          >
+            <div className="flex-1">
+              <label
+                htmlFor="submission_id"
+                className="block text-sm font-medium text-neutral-700"
+              >
+                Vincular submissão
+              </label>
+              <select
+                id="submission_id"
+                name="submission_id"
+                defaultValue=""
+                className={`mt-1 w-full ${inputClass}`}
+              >
+                <option value="" disabled>
+                  Selecione…
+                </option>
+                {availableSubmissions.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {formTitleById.get(sub.form_id) ?? "Formulário"} ·{" "}
+                    {formatDateTime(sub.submitted_at)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            >
+              Vincular
+            </button>
+          </form>
+        )}
+      </div>
 
       {/* Documentos */}
       <div className="mt-10">
