@@ -17,6 +17,7 @@ import {
   unlinkSubmission,
 } from "./actions";
 import { UploadLink } from "./upload-link";
+import { FormExhibitorLinks } from "./form-exhibitor-links";
 
 function formatAnswer(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
@@ -95,11 +96,19 @@ export default async function ParticipacaoPage({
   // Submissões dos formulários deste evento, pra origem dos dados operacionais.
   const { data: formsData } = await supabase
     .from("forms")
-    .select("id, title")
+    .select("id, title, public_slug, is_active")
     .eq("event_id", id);
-  const forms = (formsData ?? []) as { id: string; title: string }[];
+  const forms = (formsData ?? []) as {
+    id: string;
+    title: string;
+    public_slug: string;
+    is_active: boolean;
+  }[];
   const formIds = forms.map((f) => f.id);
   const formTitleById = new Map(forms.map((f) => [f.id, f.title]));
+  const activeForms = forms
+    .filter((f) => f.is_active)
+    .map((f) => ({ slug: f.public_slug, title: f.title }));
 
   let linkedSubmissions: FormSubmissionRow[] = [];
   let availableSubmissions: FormSubmissionRow[] = [];
@@ -177,6 +186,11 @@ export default async function ParticipacaoPage({
           {error}
         </p>
       )}
+
+      <FormExhibitorLinks
+        token={participation.public_token}
+        forms={activeForms}
+      />
 
       <UploadLink token={participation.public_token} />
 
