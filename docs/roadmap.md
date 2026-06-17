@@ -4,6 +4,8 @@ Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 202
 
 ## Status atual
 
+**No ar:** https://aaposta-crm.vercel.app (Vercel, deploy automático no push pra `main`).
+
 **Pronto e funcionando:**
 - Projeto Next.js (App Router, TS) + Tailwind + Supabase configurado.
 - Schema do banco aplicado no Supabase — migrations `0001_init.sql`, `0002_rls.sql` e `0003_event_exhibitor_public_token.sql`.
