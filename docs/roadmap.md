@@ -50,8 +50,7 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 5. ~~**Notificações por e-mail.**~~ → Trocado por **status visível no CRM** (2026-06-16): na página do evento, cada expositor mostra badges "Formulário" e "Contrato assinado" (verde = recebido, cinza = pendente); a página de participação repete o resumo no topo. Substitui o aviso ativo — a AAposta abre o evento e vê de relance quem já respondeu. Notificação externa fica anotada acima como melhoria futura.
 
-6. **Dashboard por evento.**
-   Visão geral de expositores, status e pendências — consolida o que as telas acima produzem.
+6. ~~**Dashboard por evento.**~~ ✅ Feito (2026-06-17). Seção "Resumo" no topo da página do evento (`event-dashboard.tsx`): números (expositores, responderam o formulário, contrato assinado recebido, concluídos), distribuição por etapa do pipeline e lista de pendências (quem falta formulário/contrato, clicável pra ficha).
 
 7. **Deploy na Vercel** com as variáveis de ambiente.
 

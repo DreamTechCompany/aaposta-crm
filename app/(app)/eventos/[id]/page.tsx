@@ -9,6 +9,7 @@ import {
 import { deleteEvent, linkExhibitor, unlinkExhibitor } from "../actions";
 import { KanbanBoard } from "./kanban-board";
 import { RegistrationLink } from "./registration-link";
+import { EventDashboard } from "./event-dashboard";
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
@@ -131,6 +132,35 @@ export default async function EventoPage({
   const del = deleteEvent.bind(null, id);
   const link = linkExhibitor.bind(null, id);
 
+  // Métricas do dashboard. Card sem etapa cai na primeira (como no kanban).
+  const firstStageId = stages[0]?.id ?? null;
+  const stageOf = (l: LinkedExhibitor) =>
+    l.stage_id && stages.some((s) => s.id === l.stage_id)
+      ? l.stage_id
+      : firstStageId;
+  const stageCounts = stages.map((s) => ({
+    name: s.name,
+    count: links.filter((l) => stageOf(l) === s.id).length,
+  }));
+  const respondedCount = links.filter((l) => respondedSet.has(l.id)).length;
+  const signedCount = links.filter((l) => signedSet.has(l.id)).length;
+  const concludedCount = links.filter((l) => {
+    const st = stages.find((s) => s.id === stageOf(l));
+    return st?.name === "Concluído";
+  }).length;
+  const pendencias = links
+    .map((l) => {
+      const missing: string[] = [];
+      if (!respondedSet.has(l.id)) missing.push("formulário");
+      if (!signedSet.has(l.id)) missing.push("contrato assinado");
+      return {
+        eeId: l.id,
+        name: l.exhibitor?.company_name ?? "Expositor removido",
+        missing,
+      };
+    })
+    .filter((p) => p.missing.length > 0);
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mx-auto max-w-2xl">
@@ -186,6 +216,22 @@ export default async function EventoPage({
           </button>
         </form>
       </div>
+      </div>
+
+      {/* Resumo / dashboard do evento */}
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold tracking-tight">Resumo</h2>
+        <div className="mt-3">
+          <EventDashboard
+            eventId={id}
+            total={links.length}
+            respondedCount={respondedCount}
+            signedCount={signedCount}
+            concludedCount={concludedCount}
+            stageCounts={stageCounts}
+            pendencias={pendencias}
+          />
+        </div>
       </div>
 
       {/* Pipeline embutido (kanban, um por evento) */}
