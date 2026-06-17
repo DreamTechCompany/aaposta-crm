@@ -104,10 +104,10 @@ export default async function PublicFormPage({
   searchParams,
 }: {
   params: Promise<{ public_slug: string }>;
-  searchParams: Promise<{ sent?: string; error?: string }>;
+  searchParams: Promise<{ sent?: string; error?: string; e?: string }>;
 }) {
   const { public_slug } = await params;
-  const { sent, error } = await searchParams;
+  const { sent, error, e } = await searchParams;
   const supabase = await createClient();
 
   const { data: form } = await supabase
@@ -171,6 +171,7 @@ export default async function PublicFormPage({
         </p>
       ) : (
         <form action={action} className="mt-8 space-y-5">
+          {e && <input type="hidden" name="e" value={e} />}
           {fields.map((field) => (
             <Field key={field.id} field={field} />
           ))}
