@@ -52,7 +52,7 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 
 6. ~~**Dashboard por evento.**~~ ✅ Feito (2026-06-17). Seção "Resumo" no topo da página do evento (`event-dashboard.tsx`): números (expositores, responderam o formulário, contrato assinado recebido, concluídos), distribuição por etapa do pipeline e lista de pendências (quem falta formulário/contrato, clicável pra ficha).
 
-7. **Deploy na Vercel** com as variáveis de ambiente.
+7. ~~**Deploy na Vercel**~~ ✅ Feito (2026-06-17). Deploy na Vercel (Hobby) com as 3 env vars do Supabase. **Obs:** o plano grátis da Vercel não deploya repo privado de org → o repo `aaposta-crm` foi tornado **público** (sem segredos commitados; `.env.local` segue ignorado). Se quiser voltar a privado no futuro: Netlify (grátis com repo privado de org) ou Vercel Pro. Pós-deploy: setar Site URL/Redirect URLs no Supabase Auth.
 
 ## Mapa do código
 
