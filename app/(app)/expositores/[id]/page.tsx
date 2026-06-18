@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { statusLabel, type ExhibitorRow, type EventRow } from "@/lib/types";
-import { deleteExhibitor } from "../actions";
+import { deleteExhibitor, linkExhibitorToEvent } from "../actions";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -45,7 +45,21 @@ export default async function ExpositorPage({
     .order("created_at", { ascending: false });
 
   const linkedEvents = (links ?? []) as unknown as LinkedEvent[];
+
+  // Eventos em que este lead ainda não está, pra alimentar o select de vínculo.
+  const linkedEventIds = new Set(
+    linkedEvents.map((l) => l.event?.id).filter(Boolean),
+  );
+  const { data: allEvents } = await supabase
+    .from("events")
+    .select("id, name")
+    .order("starts_at", { ascending: false });
+  const availableEvents = (allEvents ?? []).filter(
+    (e) => !linkedEventIds.has(e.id),
+  );
+
   const del = deleteExhibitor.bind(null, id);
+  const link = linkExhibitorToEvent.bind(null, id);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -55,7 +69,7 @@ export default async function ExpositorPage({
             href="/expositores"
             className="text-sm text-neutral-500 hover:underline"
           >
-            ← Expositores
+            ← Leads
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">
             {exhibitor.company_name}
@@ -117,6 +131,49 @@ export default async function ExpositorPage({
               </li>
             ))}
           </ul>
+        )}
+
+        {availableEvents.length > 0 ? (
+          <form
+            action={link}
+            className="mt-4 flex items-end gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+          >
+            <div className="flex-1">
+              <label
+                htmlFor="event_id"
+                className="block text-sm font-medium text-neutral-700"
+              >
+                Vincular a um evento
+              </label>
+              <select
+                id="event_id"
+                name="event_id"
+                defaultValue=""
+                className="mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
+              >
+                <option value="" disabled>
+                  Selecione…
+                </option>
+                {availableEvents.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            >
+              Vincular
+            </button>
+          </form>
+        ) : (
+          linkedEvents.length > 0 && (
+            <p className="mt-4 text-sm text-neutral-500">
+              Este lead já está em todos os eventos cadastrados.
+            </p>
+          )
         )}
       </div>
 

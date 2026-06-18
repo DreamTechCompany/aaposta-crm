@@ -33,7 +33,7 @@ export default async function AppLayout({
               href="/expositores"
               className="text-sm text-neutral-600 hover:text-neutral-900"
             >
-              Expositores
+              Leads
             </Link>
           </nav>
           <div className="flex items-center gap-4">

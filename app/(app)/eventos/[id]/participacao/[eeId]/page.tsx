@@ -18,13 +18,7 @@ import {
 } from "./actions";
 import { UploadLink } from "./upload-link";
 import { FormExhibitorLinks } from "./form-exhibitor-links";
-
-function formatAnswer(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "—";
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "boolean") return value ? "Sim" : "Não";
-  return String(value);
-}
+import { AnswerValue } from "../../../answer-value";
 
 function StatusBadge({ label, done }: { label: string; done: boolean }) {
   return (
@@ -151,7 +145,7 @@ export default async function ParticipacaoPage({
 
       <div className="mt-1 flex items-start justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {participation.exhibitor?.company_name ?? "Expositor removido"}
+          {participation.exhibitor?.company_name ?? "Lead removido"}
         </h1>
         {participation.stage && (
           <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
@@ -202,7 +196,7 @@ export default async function ParticipacaoPage({
 
         {linkedSubmissions.length === 0 ? (
           <p className="mt-3 text-sm text-neutral-500">
-            Nenhuma submissão vinculada a este expositor ainda.
+            Nenhuma submissão vinculada a este lead ainda.
           </p>
         ) : (
           <div className="mt-3 space-y-4">
@@ -236,7 +230,7 @@ export default async function ParticipacaoPage({
                       >
                         <dt className="text-neutral-500">{field.label}</dt>
                         <dd className="text-right text-neutral-900">
-                          {formatAnswer(sub.answers[field.id])}
+                          <AnswerValue value={sub.answers[field.id]} />
                         </dd>
                       </div>
                     ))}
@@ -292,7 +286,7 @@ export default async function ParticipacaoPage({
 
         {documents.length === 0 ? (
           <p className="mt-3 text-sm text-neutral-500">
-            Nenhum documento enviado a este expositor ainda.
+            Nenhum documento enviado a este lead ainda.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white text-sm">

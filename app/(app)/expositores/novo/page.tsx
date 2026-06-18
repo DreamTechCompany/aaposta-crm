@@ -10,11 +10,11 @@ export default async function NovoExpositorPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight">Novo expositor</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Novo lead</h1>
       <div className="mt-6">
         <ExhibitorForm
           action={createExhibitor}
-          submitLabel="Criar expositor"
+          submitLabel="Criar lead"
           error={error}
           cancelHref="/expositores"
         />

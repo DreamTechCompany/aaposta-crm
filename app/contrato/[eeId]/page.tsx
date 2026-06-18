@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
+  isFileAnswer,
   type ExhibitorRow,
   type FormFieldRow,
   type FormSubmissionRow,
@@ -20,6 +21,7 @@ type EE = {
 
 function formatAnswer(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
+  if (isFileAnswer(value)) return value.name;
   if (Array.isArray(value)) return value.join(", ");
   if (typeof value === "boolean") return value ? "Sim" : "Não";
   return String(value);

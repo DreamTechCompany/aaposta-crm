@@ -63,8 +63,8 @@ export type EventExhibitorWithRelations = EventExhibitorRow & {
 // Formulários (construtor por evento + link público)
 // ─────────────────────────────────────────────────────────────────────────
 
-// Tipos de campo do construtor. 'file' fica de fora por enquanto — envio de
-// arquivo entra na fase de documentos.
+// Tipos de campo do construtor. 'file' permite anexar um arquivo na resposta —
+// o upload vai pro bucket de documentos e a resposta guarda { path, name }.
 export const FIELD_TYPES = [
   "text",
   "textarea",
@@ -75,6 +75,7 @@ export const FIELD_TYPES = [
   "select",
   "multiselect",
   "checkbox",
+  "file",
 ] as const;
 
 export type FieldType = (typeof FIELD_TYPES)[number];
@@ -89,6 +90,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   select: "Seleção única",
   multiselect: "Seleção múltipla",
   checkbox: "Caixa de marcação",
+  file: "Arquivo",
 };
 
 export function fieldTypeLabel(type: string): string {
@@ -129,6 +131,18 @@ export type FormSubmissionRow = {
   answers: Record<string, unknown>;
   submitted_at: string;
 };
+
+// Valor de um campo 'file' numa resposta: caminho no Storage + nome original.
+export type FileAnswer = { path: string; name: string };
+
+export function isFileAnswer(v: unknown): v is FileAnswer {
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    typeof (v as Record<string, unknown>).path === "string" &&
+    typeof (v as Record<string, unknown>).name === "string"
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Documentos (enviados pela AAposta e recebidos do expositor)

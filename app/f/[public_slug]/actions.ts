@@ -6,6 +6,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { advanceStage, STAGE_DADOS_COLETADOS } from "@/lib/pipeline";
 import { type FormFieldRow } from "@/lib/types";
 
+// Sanitiza o nome do arquivo pra um path de storage seguro.
+function safeName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-zA-Z0-9.\-_]/g, "_")
+    .slice(0, 120);
+}
+
 // Recebe a submissão pública. O RLS libera leitura de form ativo + insert pra
 // role anon. Se vier o token de expositor (?e=), a submissão já nasce vinculada
 // à participação e avança o pipeline — usando a service role pra resolver o
@@ -49,6 +58,36 @@ export async function submitPublicForm(slug: string, formData: FormData) {
       value = formData.getAll(key).map((v) => String(v));
     } else if (field.field_type === "checkbox") {
       value = formData.get(key) === "on";
+    } else if (field.field_type === "file") {
+      const f = formData.get(key);
+      if (f instanceof File && f.size > 0) {
+        // Limite defensivo de 15 MB.
+        if (f.size > 15 * 1024 * 1024) {
+          redirect(
+            back(
+              "error=" +
+                encodeURIComponent(
+                  `Arquivo acima de 15 MB no campo: ${field.label}`,
+                ),
+            ),
+          );
+        }
+        // Upload via service role: a role anon não escreve no Storage.
+        const admin = createAdminClient();
+        const path = `form-uploads/${form.id}/${Date.now()}-${safeName(f.name)}`;
+        const { error: upError } = await admin.storage
+          .from("documents")
+          .upload(path, f, {
+            contentType: f.type || "application/octet-stream",
+            upsert: false,
+          });
+        if (upError) {
+          redirect(back("error=" + encodeURIComponent(upError.message)));
+        }
+        value = { path, name: f.name };
+      } else {
+        value = "";
+      }
     } else {
       value = String(formData.get(key) ?? "").trim();
     }

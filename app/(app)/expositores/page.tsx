@@ -12,24 +12,24 @@ export default async function ExpositoresPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Expositores</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Leads</h1>
         <Link
           href="/expositores/novo"
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
         >
-          Novo expositor
+          Novo lead
         </Link>
       </div>
 
       {error && (
         <p className="mt-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          Erro ao carregar expositores: {error.message}
+          Erro ao carregar leads: {error.message}
         </p>
       )}
 
       {!error && (!exhibitors || exhibitors.length === 0) && (
         <p className="mt-16 text-center text-sm text-neutral-500">
-          Nenhum expositor ainda. Cadastre o primeiro.
+          Nenhum lead ainda. Cadastre o primeiro.
         </p>
       )}
 

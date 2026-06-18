@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AAposta CRM",
-  description: "CRM de Eventos — gestão de expositores",
+  description: "CRM de Eventos — gestão de leads",
 };
 
 export default function RootLayout({
