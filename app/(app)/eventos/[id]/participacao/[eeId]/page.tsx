@@ -145,7 +145,7 @@ export default async function ParticipacaoPage({
 
       <div className="mt-1 flex items-start justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {participation.exhibitor?.company_name ?? "Lead removido"}
+          {participation.exhibitor?.company_name ?? "Cliente removido"}
         </h1>
         {participation.stage && (
           <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
@@ -196,7 +196,7 @@ export default async function ParticipacaoPage({
 
         {linkedSubmissions.length === 0 ? (
           <p className="mt-3 text-sm text-neutral-500">
-            Nenhuma submissão vinculada a este lead ainda.
+            Nenhuma submissão vinculada a este cliente ainda.
           </p>
         ) : (
           <div className="mt-3 space-y-4">
@@ -286,7 +286,7 @@ export default async function ParticipacaoPage({
 
         {documents.length === 0 ? (
           <p className="mt-3 text-sm text-neutral-500">
-            Nenhum documento enviado a este lead ainda.
+            Nenhum documento enviado a este cliente ainda.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white text-sm">

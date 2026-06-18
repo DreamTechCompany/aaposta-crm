@@ -83,8 +83,8 @@ export async function updateExhibitor(id: string, formData: FormData) {
   redirect(`/expositores/${id}`);
 }
 
-// Vincula este lead a um evento (cria o card do pipeline na 1ª etapa). Permite
-// trazer um lead solto pra dentro de um evento sem passar pela tela do evento.
+// Vincula este cliente a um evento (cria o card do pipeline na 1ª etapa). Permite
+// trazer um cliente solto pra dentro de um evento sem passar pela tela do evento.
 export async function linkExhibitorToEvent(
   exhibitorId: string,
   formData: FormData,
@@ -113,7 +113,7 @@ export async function linkExhibitorToEvent(
     // 23505 = unique_violation (event_id, exhibitor_id) → já vinculado
     const msg =
       error.code === "23505"
-        ? "Esse lead já está vinculado a esse evento"
+        ? "Esse cliente já está vinculado a esse evento"
         : error.message;
     redirect(`${base}?error=` + encodeURIComponent(msg));
   }
@@ -128,10 +128,10 @@ export async function deleteExhibitor(id: string) {
   const { error } = await supabase.from("exhibitors").delete().eq("id", id);
 
   if (error) {
-    // FK on delete restrict: lead vinculado a evento não pode ser excluído.
+    // FK on delete restrict: cliente vinculado a evento não pode ser excluído.
     const msg =
       error.code === "23503"
-        ? "Esse lead está vinculado a um ou mais eventos. Desvincule antes de excluir."
+        ? "Esse cliente está vinculado a um ou mais eventos. Desvincule antes de excluir."
         : error.message;
     redirect(`/expositores/${id}?error=` + encodeURIComponent(msg));
   }

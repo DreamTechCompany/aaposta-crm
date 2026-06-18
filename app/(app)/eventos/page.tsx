@@ -48,7 +48,7 @@ export default async function EventosPage() {
       const minPos = Math.min(...mine.map((r) => r.stage?.position ?? 0));
       const atMin = mine.filter((r) => (r.stage?.position ?? 0) === minPos);
       const stageName = atMin[0].stage?.name ?? "Interesse";
-      const holding = atMin.map((r) => r.exhibitor?.company_name ?? "Lead");
+      const holding = atMin.map((r) => r.exhibitor?.company_name ?? "Cliente");
       byEvent.set(e.id, {
         stageName,
         done: stageName === "Concluído",
@@ -114,7 +114,7 @@ export default async function EventosPage() {
                     <td className="px-4 py-3">
                       {!b ? (
                         <span className="text-xs text-neutral-400">
-                          Sem leads
+                          Sem clientes
                         </span>
                       ) : (
                         <div>

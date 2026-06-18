@@ -46,7 +46,7 @@ export default async function ExpositorPage({
 
   const linkedEvents = (links ?? []) as unknown as LinkedEvent[];
 
-  // Eventos em que este lead ainda não está, pra alimentar o select de vínculo.
+  // Eventos em que este cliente ainda não está, pra alimentar o select de vínculo.
   const linkedEventIds = new Set(
     linkedEvents.map((l) => l.event?.id).filter(Boolean),
   );
@@ -69,7 +69,7 @@ export default async function ExpositorPage({
             href="/expositores"
             className="text-sm text-neutral-500 hover:underline"
           >
-            ← Leads
+            ← Clientes
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">
             {exhibitor.company_name}
@@ -171,7 +171,7 @@ export default async function ExpositorPage({
         ) : (
           linkedEvents.length > 0 && (
             <p className="mt-4 text-sm text-neutral-500">
-              Este lead já está em todos os eventos cadastrados.
+              Este cliente já está em todos os eventos cadastrados.
             </p>
           )
         )}

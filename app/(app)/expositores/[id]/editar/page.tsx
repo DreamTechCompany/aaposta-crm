@@ -27,7 +27,7 @@ export default async function EditarExpositorPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight">Editar lead</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Editar cliente</h1>
       <div className="mt-6">
         <ExhibitorForm
           action={action}

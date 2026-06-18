@@ -23,10 +23,10 @@ export function UploadLink({ token }: { token: string }) {
   return (
     <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
       <p className="text-sm font-medium text-neutral-700">
-        Link de upload do lead
+        Link de upload do cliente
       </p>
       <p className="mt-1 text-xs text-neutral-500">
-        Mande este link pro lead enviar o contrato assinado. Não precisa de
+        Mande este link pro cliente enviar o contrato assinado. Não precisa de
         login.
       </p>
       <div className="mt-2 flex items-center gap-2">

@@ -117,7 +117,7 @@ export default async function FormularioBuilderPage({
       <div className="mt-10">
         <h2 className="text-lg font-semibold tracking-tight">Campos</h2>
         <p className="mt-1 text-sm text-neutral-500">
-          Monte os campos que o lead vai preencher. Arraste a ordem com as
+          Monte os campos que o cliente vai preencher. Arraste a ordem com as
           setas e clique em salvar.
         </p>
         <div className="mt-4">
