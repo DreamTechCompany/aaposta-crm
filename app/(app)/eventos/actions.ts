@@ -114,7 +114,7 @@ export async function linkExhibitor(eventId: string, formData: FormData) {
   if (!exhibitorId) {
     redirect(
       `/eventos/${eventId}?error=` +
-        encodeURIComponent("Selecione um lead"),
+        encodeURIComponent("Selecione um cliente"),
     );
   }
 
@@ -136,7 +136,7 @@ export async function linkExhibitor(eventId: string, formData: FormData) {
     // 23505 = unique_violation (event_id, exhibitor_id) → já vinculado
     const msg =
       error.code === "23505"
-        ? "Esse lead já está vinculado ao evento"
+        ? "Esse cliente já está vinculado ao evento"
         : error.message;
     redirect(`/eventos/${eventId}?error=` + encodeURIComponent(msg));
   }

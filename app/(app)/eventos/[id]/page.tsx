@@ -88,7 +88,7 @@ export default async function EventoPage({
   const stages = (stagesData ?? []) as { id: string; name: string }[];
   const cards = links.map((l) => ({
     id: l.id,
-    companyName: l.exhibitor?.company_name ?? "Lead removido",
+    companyName: l.exhibitor?.company_name ?? "Cliente removido",
     contactName: l.exhibitor?.contact_name ?? null,
     stageId: l.stage_id,
   }));
@@ -155,7 +155,7 @@ export default async function EventoPage({
       if (!signedSet.has(l.id)) missing.push("contrato assinado");
       return {
         eeId: l.id,
-        name: l.exhibitor?.company_name ?? "Lead removido",
+        name: l.exhibitor?.company_name ?? "Cliente removido",
         missing,
       };
     })
@@ -244,10 +244,10 @@ export default async function EventoPage({
         <KanbanBoard eventId={id} stages={stages} cards={cards} />
       </div>
 
-      {/* Leads do evento */}
+      {/* Clientes do evento */}
       <div className="mx-auto mt-10 max-w-2xl">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold tracking-tight">Leads</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Clientes</h2>
           <Link
             href="/expositores/novo"
             className="text-sm text-neutral-500 hover:underline"
@@ -258,7 +258,7 @@ export default async function EventoPage({
 
         {links.length === 0 ? (
           <p className="mt-3 text-sm text-neutral-500">
-            Nenhum lead vinculado a este evento ainda.
+            Nenhum cliente vinculado a este evento ainda.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-neutral-100 rounded-lg border border-neutral-200 bg-white text-sm">
@@ -280,7 +280,7 @@ export default async function EventoPage({
                         </Link>
                       ) : (
                         <span className="text-neutral-400">
-                          Lead removido
+                          Cliente removido
                         </span>
                       )}
                       {l.exhibitor?.contact_name && (
@@ -327,7 +327,7 @@ export default async function EventoPage({
           </ul>
         )}
 
-        {/* Vincular lead existente */}
+        {/* Vincular cliente existente */}
         {available.length > 0 ? (
           <form
             action={link}
@@ -338,7 +338,7 @@ export default async function EventoPage({
                 htmlFor="exhibitor_id"
                 className="block text-sm font-medium text-neutral-700"
               >
-                Vincular lead
+                Vincular cliente
               </label>
               <select
                 id="exhibitor_id"
@@ -367,7 +367,7 @@ export default async function EventoPage({
           allExhibitors &&
           allExhibitors.length > 0 && (
             <p className="mt-4 text-sm text-neutral-500">
-              Todos os leads cadastrados já estão neste evento.
+              Todos os clientes cadastrados já estão neste evento.
             </p>
           )
         )}
