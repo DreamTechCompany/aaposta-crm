@@ -35,8 +35,8 @@ export function EventDashboard({
   if (total === 0) {
     return (
       <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-500">
-        Nenhum expositor vinculado ainda — o resumo aparece quando houver
-        expositores no evento.
+        Nenhum lead vinculado ainda — o resumo aparece quando houver
+        leads no evento.
       </div>
     );
   }
@@ -44,7 +44,7 @@ export function EventDashboard({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Expositores" value={String(total)} />
+        <Stat label="Leads" value={String(total)} />
         <Stat label="Responderam o formulário" value={`${respondedCount}/${total}`} />
         <Stat label="Contrato assinado recebido" value={`${signedCount}/${total}`} />
         <Stat label="Concluídos" value={`${concludedCount}/${total}`} />

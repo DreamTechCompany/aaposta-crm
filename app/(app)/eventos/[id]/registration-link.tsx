@@ -23,10 +23,10 @@ export function RegistrationLink({ slug }: { slug: string }) {
   return (
     <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
       <p className="text-sm font-medium text-neutral-700">
-        Link de cadastro de expositor
+        Link de cadastro de lead
       </p>
       <p className="mt-1 text-xs text-neutral-500">
-        Quem preencher entra como expositor já vinculado a este evento (etapa
+        Quem preencher entra como lead já vinculado a este evento (etapa
         Interesse). Sem login.
       </p>
       <div className="mt-2 flex items-center gap-2">

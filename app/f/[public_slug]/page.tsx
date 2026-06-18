@@ -78,6 +78,20 @@ function Field({ field }: { field: FormFieldRow }) {
     );
   }
 
+  if (field.field_type === "file") {
+    return (
+      <label className="block">
+        {label}
+        <input
+          type="file"
+          name={name}
+          required={required}
+          className="mt-1 block w-full text-sm text-neutral-700 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-700"
+        />
+      </label>
+    );
+  }
+
   const typeMap: Record<string, string> = {
     text: "text",
     number: "number",
@@ -170,7 +184,11 @@ export default async function PublicFormPage({
           Este formulário ainda não tem campos.
         </p>
       ) : (
-        <form action={action} className="mt-8 space-y-5">
+        <form
+          action={action}
+          encType="multipart/form-data"
+          className="mt-8 space-y-5"
+        >
           {e && <input type="hidden" name="e" value={e} />}
           {fields.map((field) => (
             <Field key={field.id} field={field} />

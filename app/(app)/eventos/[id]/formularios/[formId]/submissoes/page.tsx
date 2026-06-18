@@ -6,13 +6,7 @@ import {
   type FormFieldRow,
   type FormSubmissionRow,
 } from "@/lib/types";
-
-function formatAnswer(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "—";
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "boolean") return value ? "Sim" : "Não";
-  return String(value);
-}
+import { AnswerValue } from "../../../../answer-value";
 
 function formatDateTime(d: string): string {
   return new Date(d).toLocaleString("pt-BR");
@@ -85,7 +79,7 @@ export default async function SubmissoesPage({
                   >
                     <dt className="text-neutral-500">{field.label}</dt>
                     <dd className="text-right text-neutral-900">
-                      {formatAnswer(sub.answers[field.id])}
+                      <AnswerValue value={sub.answers[field.id]} />
                     </dd>
                   </div>
                 ))}

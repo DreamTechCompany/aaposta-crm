@@ -61,10 +61,10 @@ export function FormExhibitorLinks({
   return (
     <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
       <p className="text-sm font-medium text-neutral-700">
-        Formulário do expositor (link individual)
+        Formulário do lead (link individual)
       </p>
       <p className="mt-1 text-xs text-neutral-500">
-        Mande este link pro expositor. A resposta já chega vinculada a ele e
+        Mande este link pro lead. A resposta já chega vinculada a ele e
         avança o pipeline — sem precisar vincular à mão.
       </p>
       <div className="mt-3 space-y-3">
