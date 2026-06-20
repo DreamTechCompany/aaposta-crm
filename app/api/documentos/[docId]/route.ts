@@ -32,7 +32,7 @@ export async function GET(
 
   const { data: signed, error } = await supabase.storage
     .from("documents")
-    .createSignedUrl(doc.storage_path, 60);
+    .createSignedUrl(doc.storage_path, 60, { download: true });
 
   if (error || !signed) {
     return NextResponse.json(

@@ -55,11 +55,11 @@ export default async function CadastrarPage({
               name="password"
               type="password"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
               className={inputClass}
             />
-            <p className="mt-1 text-xs text-neutral-400">Mínimo 6 caracteres.</p>
+            <p className="mt-1 text-xs text-neutral-400">Mínimo 8 caracteres.</p>
           </div>
           <button
             type="submit"

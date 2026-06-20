@@ -28,10 +28,10 @@ export async function signup(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (password.length < 6) {
+  if (password.length < 8) {
     redirect(
       "/cadastrar?error=" +
-        encodeURIComponent("A senha precisa ter ao menos 6 caracteres"),
+        encodeURIComponent("A senha precisa ter ao menos 8 caracteres"),
     );
   }
 

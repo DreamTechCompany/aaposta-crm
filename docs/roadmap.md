@@ -1,6 +1,6 @@
 # Roadmap — AAposta CRM
 
-Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 2026-06-15.
+Documento pra quem for continuar o projeto (Pedro ou Caetano). Atualizado em 2026-06-20.
 
 ## Status atual
 
@@ -32,6 +32,18 @@ Precisa do arquivo `.env.local` (não vai pro git) com as keys do Supabase — m
 - ~~**Upload público de documento** (expositor anônimo)~~ → resolvido: Server Action com service role + token por participação (`/u/[token]`).
 - **Owner da org GitHub:** confirmar Pedro (`pedroacpellegrini`) como Owner de `DreamTechCompany` — hoje está como member.
 - **Deploy:** ainda roda só local. Publicar na Vercel é passo futuro (gera URL fixa, sem depender do terminal).
+
+### Segurança (revisão 2026-06-20)
+
+**Corrigido no código:**
+- **IDOR no download de anexos** (`/api/arquivo`): antes assinava qualquer `path` do bucket. Agora valida que o caminho aparece de fato como anexo de uma submissão do formulário antes de gerar o signed URL.
+- **Allow-list de upload** (`lib/upload.ts`): fluxos anônimos (`/f/[slug]`, `/u/[token]`) só aceitam PDF/imagem (tipo + extensão), evitando XSS armazenado via HTML/SVG. Downloads agora forçam anexo (`download: true`) em `/api/arquivo` e `/api/documentos/[docId]`.
+- **Senha mínima** subida de 6 → 8 caracteres.
+
+**Em aberto (decisão / ação manual):**
+- ⚠️ **Cadastro público aberto + RLS `using(true)` (CRÍTICO):** qualquer pessoa pode criar conta em `/cadastrar` e, autenticada, tem acesso total a todos os dados (expositores, CNPJ, contratos) — risco de vazamento/LGPD, agravado pelo repo ser **público**. Mitigação imediata sem código: desligar *"Allow new users to sign up"* no Supabase (Auth → Providers). Solução melhor: gating por convite/allowlist de e-mail. **Fazer antes de entregar pro cliente.**
+- **Confirmação de e-mail:** garantir que está ligada no Supabase Auth (o signup tolera estar desativada).
+- **Rate-limit nos links públicos** (`/expor/[slug]`, `/f/[slug]`): rodam com service role sem proteção anti-spam; slug do evento é previsível (`slugify` do nome). Considerar rate-limit e/ou token aleatório no link.
 
 ## Próximos passos (ordem sugerida)
 

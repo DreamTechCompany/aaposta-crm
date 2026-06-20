@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { advanceStage, STAGE_DADOS_COLETADOS } from "@/lib/pipeline";
 import { type FormFieldRow } from "@/lib/types";
+import { validateUpload } from "@/lib/upload";
 
 // Sanitiza o nome do arquivo pra um path de storage seguro.
 function safeName(name: string): string {
@@ -61,14 +62,12 @@ export async function submitPublicForm(slug: string, formData: FormData) {
     } else if (field.field_type === "file") {
       const f = formData.get(key);
       if (f instanceof File && f.size > 0) {
-        // Limite defensivo de 15 MB.
-        if (f.size > 15 * 1024 * 1024) {
+        const check = validateUpload(f);
+        if (!check.ok) {
           redirect(
             back(
               "error=" +
-                encodeURIComponent(
-                  `Arquivo acima de 15 MB no campo: ${field.label}`,
-                ),
+                encodeURIComponent(`${check.reason} (campo: ${field.label})`),
             ),
           );
         }

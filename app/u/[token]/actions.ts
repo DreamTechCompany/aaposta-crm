@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { advanceStage, STAGE_CONTRATO_ASSINADO } from "@/lib/pipeline";
+import { validateUpload } from "@/lib/upload";
 
 function safeName(name: string): string {
   return name
@@ -21,9 +22,9 @@ export async function submitSignedDocument(token: string, formData: FormData) {
   if (!(file instanceof File) || file.size === 0) {
     redirect(`${base}?error=` + encodeURIComponent("Selecione um arquivo"));
   }
-  // Limite defensivo de 15 MB.
-  if (file.size > 15 * 1024 * 1024) {
-    redirect(`${base}?error=` + encodeURIComponent("Arquivo acima de 15 MB"));
+  const check = validateUpload(file);
+  if (!check.ok) {
+    redirect(`${base}?error=` + encodeURIComponent(check.reason));
   }
 
   const supabase = createAdminClient();
