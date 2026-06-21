@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ExhibitorForm } from "@/app/(app)/expositores/exhibitor-form";
 import { registerExhibitor } from "./actions";
+import { PublicRegistration } from "./public-registration";
+import { RegistrationSuccess } from "./registration-success";
 
 export default async function ExporPage({
   params,
@@ -15,17 +16,17 @@ export default async function ExporPage({
 
   const { data: event } = await supabase
     .from("events")
-    .select("name")
+    .select("name, location, starts_at")
     .eq("slug", slug)
-    .maybeSingle<{ name: string }>();
+    .maybeSingle<{ name: string; location: string | null; starts_at: string | null }>();
 
   if (!event) {
     return (
       <div className="mx-auto max-w-lg px-6 py-16 text-center">
-        <h1 className="text-xl font-semibold tracking-tight">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">
           Cadastro indisponível
         </h1>
-        <p className="mt-2 text-sm text-neutral-500">
+        <p className="mt-2 text-sm text-slate-500">
           Este link de cadastro não existe ou foi removido.
         </p>
       </div>
@@ -33,36 +34,20 @@ export default async function ExporPage({
   }
 
   if (sent) {
-    return (
-      <div className="mx-auto max-w-lg px-6 py-16 text-center">
-        <h1 className="text-xl font-semibold tracking-tight">
-          Cadastro enviado
-        </h1>
-        <p className="mt-2 text-sm text-neutral-500">
-          Obrigado! Recebemos o seu cadastro para o evento {event.name}.
-        </p>
-      </div>
-    );
+    return <RegistrationSuccess eventName={event.name} />;
   }
 
   const action = registerExhibitor.bind(null, slug);
 
   return (
-    <div className="mx-auto max-w-lg px-6 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Cadastro de expositor
-      </h1>
-      <p className="mt-2 text-sm text-neutral-600">
-        Evento: <span className="font-medium">{event.name}</span>
-      </p>
-
-      <div className="mt-8">
-        <ExhibitorForm
-          action={action}
-          submitLabel="Enviar cadastro"
-          error={error}
-        />
-      </div>
-    </div>
+    <PublicRegistration
+      event={{
+        name: event.name,
+        location: event.location,
+        startsAt: event.starts_at,
+      }}
+      action={action}
+      error={error}
+    />
   );
 }

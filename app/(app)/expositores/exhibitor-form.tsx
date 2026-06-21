@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { type ExhibitorRow } from "@/lib/types";
+import { SubmitButton } from "./submit-button";
 
 const inputClass =
-  "mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
-const labelClass = "block text-sm font-medium text-neutral-700";
+  "mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm transition-colors focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200";
+const labelClass = "block text-sm font-medium text-slate-700";
 
 export function ExhibitorForm({
   action,
@@ -103,17 +104,12 @@ export function ExhibitorForm({
         />
       </div>
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-        >
-          {submitLabel}
-        </button>
+      <div className="flex items-center gap-3">
+        <SubmitButton label={submitLabel} />
         {cancelHref && (
           <Link
             href={cancelHref}
-            className="rounded-md px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+            className="rounded-md px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
           >
             Cancelar
           </Link>

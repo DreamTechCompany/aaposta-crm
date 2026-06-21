@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
+import { AppNav } from "./app-nav";
+import { PageTransition } from "./page-transition";
 
 export default async function AppLayout({
   children,
@@ -16,37 +17,25 @@ export default async function AppLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-neutral-200 bg-white">
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <nav className="flex items-center gap-6">
-            <Link href="/eventos" className="font-semibold tracking-tight">
-              AAposta CRM
-            </Link>
-            <Link
-              href="/eventos"
-              className="text-sm text-neutral-600 hover:text-neutral-900"
-            >
-              Eventos
-            </Link>
-            <Link
-              href="/expositores"
-              className="text-sm text-neutral-600 hover:text-neutral-900"
-            >
-              Clientes
-            </Link>
-          </nav>
+          <AppNav />
           <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-500">{user.email}</span>
+            <span className="hidden text-sm text-slate-500 sm:inline">
+              {user.email}
+            </span>
             <form action={logout}>
-              <button className="text-sm text-neutral-600 hover:text-neutral-900">
+              <button className="rounded-md px-2 py-1 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
                 Sair
               </button>
             </form>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        <PageTransition>{children}</PageTransition>
+      </main>
     </div>
   );
 }
