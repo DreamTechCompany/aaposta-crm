@@ -1,15 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { type EventRow } from "@/lib/types";
-
-function formatDate(d: string | null): string {
-  if (!d) return "—";
-  return new Date(d + "T00:00:00").toLocaleDateString("pt-BR");
-}
-
-// Status do evento no pipeline = etapa mais atrasada (gargalo) entre os
-// expositores, com quem está segurando o avanço.
-type Bottleneck = { stageName: string; done: boolean; holding: string[] } | null;
+import { EventsList, type EventCard } from "./events-list";
 
 export default async function EventosPage() {
   const supabase = await createClient();
@@ -21,8 +13,18 @@ export default async function EventosPage() {
   const events = (eventsData ?? []) as EventRow[];
   const eventIds = events.map((e) => e.id);
 
-  // Participações de todos os eventos, com etapa e nome do expositor.
-  const byEvent = new Map<string, Bottleneck>();
+  // Total de etapas do pipeline (global) — usado pra desenhar o progresso.
+  const { data: stagesData } = await supabase
+    .from("pipeline_stages")
+    .select("position");
+  const totalStages = Math.max(
+    1,
+    ...((stagesData ?? []) as { position: number }[]).map((s) => s.position + 1),
+  );
+
+  // Status do evento no pipeline = etapa mais atrasada (gargalo) entre os
+  // expositores, com quem está segurando o avanço.
+  const byEvent = new Map<string, EventCard["bottleneck"]>();
   if (eventIds.length > 0) {
     const { data: eeData } = await supabase
       .from("event_exhibitors")
@@ -53,17 +55,29 @@ export default async function EventosPage() {
         stageName,
         done: stageName === "Concluído",
         holding,
+        position: minPos,
+        exhibitorCount: mine.length,
       });
     }
   }
 
+  const cards: EventCard[] = events.map((e) => ({
+    id: e.id,
+    name: e.name,
+    location: e.location,
+    startsAt: e.starts_at,
+    bottleneck: byEvent.get(e.id) ?? null,
+  }));
+
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Eventos</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          Eventos
+        </h1>
         <Link
           href="/eventos/novo"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 active:scale-[0.98]"
         >
           Novo evento
         </Link>
@@ -76,76 +90,13 @@ export default async function EventosPage() {
       )}
 
       {!error && events.length === 0 && (
-        <p className="mt-16 text-center text-sm text-neutral-500">
+        <p className="mt-16 text-center text-sm text-slate-500">
           Nenhum evento ainda. Crie o primeiro.
         </p>
       )}
 
-      {events.length > 0 && (
-        <div className="mt-6 overflow-hidden rounded-lg border border-neutral-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500">
-              <tr>
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">Local</th>
-                <th className="px-4 py-3 font-medium">Início</th>
-                <th className="px-4 py-3 font-medium">Status (pipeline)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {events.map((e) => {
-                const b = byEvent.get(e.id) ?? null;
-                return (
-                  <tr key={e.id} className="hover:bg-neutral-50">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/eventos/${e.id}`}
-                        className="font-medium text-neutral-900 hover:underline"
-                      >
-                        {e.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-neutral-600">
-                      {e.location || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-neutral-600">
-                      {formatDate(e.starts_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {!b ? (
-                        <span className="text-xs text-neutral-400">
-                          Sem clientes
-                        </span>
-                      ) : (
-                        <div>
-                          <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-xs ${
-                              b.done
-                                ? "bg-green-50 text-green-700"
-                                : "bg-neutral-100 text-neutral-700"
-                            }`}
-                          >
-                            {b.stageName}
-                          </span>
-                          {!b.done && (
-                            <p
-                              className="mt-1 text-xs text-neutral-500"
-                              title={b.holding.join(", ")}
-                            >
-                              aguardando: {b.holding[0]}
-                              {b.holding.length > 1 &&
-                                ` +${b.holding.length - 1}`}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {cards.length > 0 && (
+        <EventsList cards={cards} totalStages={totalStages} />
       )}
     </div>
   );
