@@ -154,11 +154,20 @@ export const DOCUMENT_KINDS = ["contrato", "manual", "cpe", "outro"] as const;
 
 export type DocumentKind = (typeof DOCUMENT_KINDS)[number];
 
+// Tipos que o expositor envia pelo portal público (/u/[token]).
+export const EXHIBITOR_UPLOAD_KINDS = [
+  "contrato_assinado",
+  "cpe",
+  "comprovante",
+  "outro",
+] as const;
+
 const DOCUMENT_KIND_LABELS: Record<string, string> = {
   contrato: "Contrato",
   contrato_assinado: "Contrato assinado",
   manual: "Manual",
   cpe: "CPE",
+  comprovante: "Comprovante (Pix)",
   outro: "Outro",
 };
 

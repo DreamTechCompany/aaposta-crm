@@ -8,7 +8,7 @@ import {
   type FieldType,
   type FormFieldRow,
 } from "@/lib/types";
-import { saveFields, type FieldInput } from "../actions";
+import { saveForm, type FieldInput } from "../actions";
 
 // Campo no estado local — id opcional (novos campos ainda não têm) + uma key
 // estável só pra renderização do React.
@@ -39,16 +39,28 @@ function toDraft(field: FormFieldRow): DraftField {
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
+const metaInputClass =
+  "mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
+const labelClass = "block text-sm font-medium text-neutral-700";
 
 export function FieldBuilder({
   eventId,
   formId,
+  initialTitle,
+  initialDescription,
+  initialIsActive,
   initialFields,
 }: {
   eventId: string;
   formId: string;
+  initialTitle: string;
+  initialDescription: string;
+  initialIsActive: boolean;
   initialFields: FormFieldRow[];
 }) {
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
+  const [isActive, setIsActive] = useState(initialIsActive);
   const [fields, setFields] = useState<DraftField[]>(
     initialFields.map(toDraft),
   );
@@ -95,6 +107,10 @@ export function FieldBuilder({
 
   function save() {
     setError(null);
+    if (!title.trim()) {
+      setError("Título é obrigatório");
+      return;
+    }
     const payload: FieldInput[] = fields.map((f) => ({
       id: f.id,
       label: f.label.trim(),
@@ -109,7 +125,12 @@ export function FieldBuilder({
     }));
 
     startTransition(async () => {
-      const result = await saveFields(eventId, formId, payload);
+      const result = await saveForm(
+        eventId,
+        formId,
+        { title: title.trim(), description: description.trim() || null, is_active: isActive },
+        payload,
+      );
       if (result?.error) {
         setError(result.error);
       } else {
@@ -127,9 +148,55 @@ export function FieldBuilder({
       )}
       {saved && (
         <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-          Campos salvos.
+          Formulário salvo.
         </p>
       )}
+
+      {/* Dados do formulário */}
+      <div className="space-y-4 rounded-lg border border-neutral-200 bg-white p-4">
+        <div>
+          <label className={labelClass} htmlFor="form-title">
+            Título *
+          </label>
+          <input
+            id="form-title"
+            value={title}
+            onChange={(e) => {
+              setSaved(false);
+              setTitle(e.target.value);
+            }}
+            className={metaInputClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="form-description">
+            Descrição
+          </label>
+          <textarea
+            id="form-description"
+            value={description}
+            onChange={(e) => {
+              setSaved(false);
+              setDescription(e.target.value);
+            }}
+            rows={2}
+            className={metaInputClass}
+          />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(e) => {
+              setSaved(false);
+              setIsActive(e.target.checked);
+            }}
+          />
+          Formulário ativo (aceita respostas no link público)
+        </label>
+      </div>
+
+      <h3 className="pt-2 text-sm font-semibold text-neutral-700">Campos</h3>
 
       {fields.length === 0 && (
         <p className="text-sm text-neutral-500">
@@ -239,7 +306,7 @@ export function FieldBuilder({
           disabled={isPending}
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
         >
-          {isPending ? "Salvando…" : "Salvar campos"}
+          {isPending ? "Salvando…" : "Salvar formulário"}
         </button>
       </div>
     </div>

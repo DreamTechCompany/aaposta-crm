@@ -67,35 +67,6 @@ export async function createForm(eventId: string, formData: FormData) {
   redirect(`${base}/${formId}`);
 }
 
-// Atualiza os metadados do formulário (título, descrição, ativo).
-export async function updateForm(
-  eventId: string,
-  formId: string,
-  formData: FormData,
-) {
-  const title = str(formData.get("title"));
-  const description = nullable(formData.get("description"));
-  const isActive = formData.get("is_active") === "on";
-  const base = `/eventos/${eventId}/formularios/${formId}`;
-
-  if (!title) {
-    redirect(`${base}?error=` + encodeURIComponent("Título é obrigatório"));
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("forms")
-    .update({ title, description, is_active: isActive })
-    .eq("id", formId);
-
-  if (error) {
-    redirect(`${base}?error=` + encodeURIComponent(error.message));
-  }
-
-  revalidatePath(base);
-  redirect(`${base}?saved=1`);
-}
-
 export async function deleteForm(eventId: string, formId: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("forms").delete().eq("id", formId);
@@ -117,16 +88,40 @@ export type FieldInput = {
   is_required: boolean;
 };
 
-// Salva a lista de campos do formulário de uma vez (diff por id):
-// atualiza os existentes, insere os novos, apaga os removidos. Preserva o id
-// dos campos não mexidos pra não invalidar submissões já gravadas.
-export async function saveFields(
+export type FormMeta = {
+  title: string;
+  description: string | null;
+  is_active: boolean;
+};
+
+// Salva o formulário inteiro de uma vez: metadados (título, descrição, ativo) +
+// a lista de campos (diff por id — atualiza existentes, insere novos, apaga
+// removidos). Preserva o id dos campos não mexidos pra não invalidar submissões
+// já gravadas. Um único save evita a confusão de dois botões separados.
+export async function saveForm(
   eventId: string,
   formId: string,
+  meta: FormMeta,
   fields: FieldInput[],
 ) {
   const base = `/eventos/${eventId}/formularios/${formId}`;
   const supabase = await createClient();
+
+  const title = (meta.title ?? "").trim();
+  if (!title) {
+    return { error: "Título é obrigatório" };
+  }
+
+  const { error: metaError } = await supabase
+    .from("forms")
+    .update({
+      title,
+      description: (meta.description ?? "")?.trim() || null,
+      is_active: Boolean(meta.is_active),
+    })
+    .eq("id", formId);
+
+  if (metaError) return { error: metaError.message };
 
   // Sanitiza e valida.
   const clean = fields

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-// Mostra o link público de upload do contrato assinado pra mandar ao expositor.
+// Mostra o link público do portal de documentos pra mandar ao expositor —
+// mão dupla: ele baixa o que a organização enviou e sobe o que precisa entregar.
 export function UploadLink({ token }: { token: string }) {
   const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
@@ -23,11 +24,12 @@ export function UploadLink({ token }: { token: string }) {
   return (
     <div className="mt-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
       <p className="text-sm font-medium text-neutral-700">
-        Link de upload do cliente
+        Portal de documentos do cliente
       </p>
       <p className="mt-1 text-xs text-neutral-500">
-        Mande este link pro cliente enviar o contrato assinado. Não precisa de
-        login.
+        Um link só: o cliente baixa os documentos que você enviou e sobe os
+        dele (contrato assinado, CPE, comprovantes). Cai direto aqui no CRM. Não
+        precisa de login.
       </p>
       <div className="mt-2 flex items-center gap-2">
         <code className="flex-1 truncate rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700">

@@ -39,6 +39,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/cadastrar") ||
     pathname.startsWith("/f/") ||
     pathname.startsWith("/u/") ||
+    pathname.startsWith("/api/portal/") ||
     pathname.startsWith("/expor/");
 
   if (!user && !isPublic) {

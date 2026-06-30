@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { advanceStage, STAGE_CONTRATO_ASSINADO } from "@/lib/pipeline";
 import { validateUpload } from "@/lib/upload";
+import { EXHIBITOR_UPLOAD_KINDS } from "@/lib/types";
 
 function safeName(name: string): string {
   return name
@@ -13,10 +14,18 @@ function safeName(name: string): string {
     .slice(0, 120);
 }
 
-// Recebe o contrato assinado do expositor anônimo. Roda com a service role
-// (ignora RLS); a autorização é o próprio token da participação.
-export async function submitSignedDocument(token: string, formData: FormData) {
+const KIND_SET = new Set<string>(EXHIBITOR_UPLOAD_KINDS);
+
+// Recebe um documento do expositor anônimo pelo portal. Roda com a service role
+// (ignora RLS); a autorização é o próprio token da participação. O expositor
+// escolhe o tipo (contrato assinado, CPE, comprovante, outro) e pode subir
+// vários — cada envio grava um documento com direction "recebido".
+export async function submitDocument(token: string, formData: FormData) {
   const base = `/u/${token}`;
+  const kindRaw = formData.get("kind");
+  const kind = typeof kindRaw === "string" && KIND_SET.has(kindRaw)
+    ? kindRaw
+    : "outro";
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) {
@@ -39,7 +48,7 @@ export async function submitSignedDocument(token: string, formData: FormData) {
     redirect(`${base}?error=` + encodeURIComponent("Link inválido"));
   }
 
-  const path = `${ee.id}/signed-${Date.now()}-${safeName(file.name)}`;
+  const path = `${ee.id}/${kind}-${Date.now()}-${safeName(file.name)}`;
 
   const { error: uploadError } = await supabase.storage
     .from("documents")
@@ -54,7 +63,7 @@ export async function submitSignedDocument(token: string, formData: FormData) {
 
   const { error: insertError } = await supabase.from("documents").insert({
     event_exhibitor_id: ee.id,
-    kind: "contrato_assinado",
+    kind,
     direction: "recebido",
     storage_path: path,
     file_name: file.name,
@@ -67,7 +76,9 @@ export async function submitSignedDocument(token: string, formData: FormData) {
   }
 
   // Receber o contrato assinado avança o card para "Contrato assinado".
-  await advanceStage(supabase, ee.id, STAGE_CONTRATO_ASSINADO);
+  if (kind === "contrato_assinado") {
+    await advanceStage(supabase, ee.id, STAGE_CONTRATO_ASSINADO);
+  }
 
   redirect(`${base}?sent=1`);
 }

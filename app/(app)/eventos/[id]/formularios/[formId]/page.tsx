@@ -2,23 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { type FormRow, type FormFieldRow } from "@/lib/types";
-import { updateForm, deleteForm } from "../actions";
+import { deleteForm } from "../actions";
 import { FieldBuilder } from "./field-builder";
 import { PublicLink } from "./public-link";
-
-const inputClass =
-  "mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none";
-const labelClass = "block text-sm font-medium text-neutral-700";
 
 export default async function FormularioBuilderPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string; formId: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id, formId } = await params;
-  const { error, saved } = await searchParams;
+  const { error } = await searchParams;
   const supabase = await createClient();
 
   const { data: form } = await supabase
@@ -43,7 +39,6 @@ export default async function FormularioBuilderPage({
     .select("id", { count: "exact", head: true })
     .eq("form_id", formId);
 
-  const update = updateForm.bind(null, id, formId);
   const del = deleteForm.bind(null, id, formId);
 
   return (
@@ -63,67 +58,23 @@ export default async function FormularioBuilderPage({
           {error}
         </p>
       )}
-      {saved && (
-        <p className="mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-          Formulário salvo.
-        </p>
-      )}
 
       <PublicLink slug={form.public_slug} isActive={form.is_active} />
 
-      {/* Metadados do formulário */}
-      <form action={update} className="mt-8 space-y-5">
-        <div>
-          <label className={labelClass} htmlFor="title">
-            Título *
-          </label>
-          <input
-            id="title"
-            name="title"
-            required
-            defaultValue={form.title}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass} htmlFor="description">
-            Descrição
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            rows={2}
-            defaultValue={form.description ?? ""}
-            className={inputClass}
-          />
-        </div>
-        <label className="flex items-center gap-2 text-sm text-neutral-700">
-          <input
-            type="checkbox"
-            name="is_active"
-            defaultChecked={form.is_active}
-          />
-          Formulário ativo (aceita respostas no link público)
-        </label>
-        <button
-          type="submit"
-          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-        >
-          Salvar dados do formulário
-        </button>
-      </form>
-
-      {/* Construtor de campos */}
-      <div className="mt-10">
-        <h2 className="text-lg font-semibold tracking-tight">Campos</h2>
-        <p className="mt-1 text-sm text-neutral-500">
-          Monte os campos que o cliente vai preencher. Arraste a ordem com as
-          setas e clique em salvar.
+      {/* Editor do formulário: dados + campos, um único salvar */}
+      <div className="mt-8">
+        <p className="text-sm text-neutral-500">
+          Edite os dados e monte os campos que o cliente vai preencher. Reordene
+          com as setas e clique em <strong>Salvar formulário</strong> — salva
+          tudo de uma vez.
         </p>
         <div className="mt-4">
           <FieldBuilder
             eventId={id}
             formId={formId}
+            initialTitle={form.title}
+            initialDescription={form.description ?? ""}
+            initialIsActive={form.is_active}
             initialFields={fields}
           />
         </div>
